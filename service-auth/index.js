@@ -1,25 +1,21 @@
 const express = require("express");
 const os = require("os");
 const mysql = require("mysql2");
+// Obtain the connection to the database
+const database = require("./connexion_mysql");
+const connection = database.getConnection();
+const routerUser = require("./routes/user.route");
 
-setTimeout(() => {
-  const con = mysql.createConnection({
-    host: "localhost",
-    user: "user",
-    password: "password",
-    port: "3306",
-    database: "cesi",
-  });
+// Use the connection to execute queries, for example:
+// connection.query("SELECT * FROM Users", (err, results) => {
+//   if (err) {
+//     console.error(err);
+//     return;
+//   }
+//   console.log(results);
+// });
 
-  con.connect((err) => {
-    if (err) {
-      console.log("not connected");
-      console.log(err);
-    } else {
-      console.log("connected");
-    }
-  });
-}, 20000);
+
 
 const app = express();
 const port = 3000;
@@ -33,6 +29,10 @@ app.get("/login", (req, res) => {
 app.get("/getCPU", (req, res) => {
   res.send({ cpu: cpuUsage });
 });
+
+app.use(express.json());
+app.use(routerUser);
+
 
 app.listen(port, () => {
   console.log(`Authentication service is running on http://servicex:${port}`);
