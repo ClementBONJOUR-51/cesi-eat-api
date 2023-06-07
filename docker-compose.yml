@@ -8,6 +8,8 @@ services:
       - "1111:3000"
     networks:
       - net
+    depends_on:  
+      - mysql
   server2:
     build:
       context: ./service-auth
@@ -16,6 +18,8 @@ services:
       - "2222:3000"
     networks:
       - net
+    depends_on:  
+      - mysql
   # server3:
   #   build:
   #     context: ./authentification
@@ -24,6 +28,8 @@ services:
   #     - "3333:3000"
   #   networks:
   #     - net
+    # depends_on:  
+    #   - mysql
   main_server:
     build:
       context: ./load-balancer
@@ -32,12 +38,14 @@ services:
       - "3000:3000"
     networks:
       - net
+    depends_on:  
+      - mysql
   mysql:
     build:
       context: ./mysql-db
       dockerfile: Dockerfile
     ports:
-      - "33060:3306"
+      - "3306:3306"
     networks:
       - net
   mongodb:
