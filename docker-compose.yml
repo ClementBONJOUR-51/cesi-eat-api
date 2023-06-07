@@ -32,22 +32,22 @@ services:
       - "3000:3000"
     networks:
       - net
-  # mysql:
-  #   build:
-  #     context: ./mysql-db
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "33060:3306"
-  #   networks:
-  #     - net
-  # mongodb:
-  #   build:
-  #     context: ./mongodb-db
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - '27017:27017'
-  #   networks:
-  #     - net
+  mysql:
+    build:
+      context: ./mysql-db
+      dockerfile: Dockerfile
+    ports:
+      - "33060:3306"
+    networks:
+      - net
+  mongodb:
+    build:
+      context: ./mongodb-db
+      dockerfile: Dockerfile
+    ports:
+      - '27017:27017'
+    networks:
+      - net
     
 
 networks:

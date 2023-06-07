@@ -1,6 +1,6 @@
 # CESI EATS BACKEND
 
-## Lucnh
+## Lunch
 
 ```bash
 docker-compose up --build
