@@ -1,0 +1,55 @@
+version: "3"
+services:
+  server1:
+    build:
+      context: ./service-auth
+      dockerfile: Dockerfile
+    ports:
+      - "1111:3000"
+    networks:
+      - net
+  server2:
+    build:
+      context: ./service-auth
+      dockerfile: Dockerfile
+    ports:
+      - "2222:3000"
+    networks:
+      - net
+  # server3:
+  #   build:
+  #     context: ./authentification
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3333:3000"
+  #   networks:
+  #     - net
+  main_server:
+    build:
+      context: ./load-balancer
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - net
+  # mysql:
+  #   build:
+  #     context: ./mysql-db
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "33060:3306"
+  #   networks:
+  #     - net
+  # mongodb:
+  #   build:
+  #     context: ./mongodb-db
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '27017:27017'
+  #   networks:
+  #     - net
+    
+
+networks:
+  net:
+
