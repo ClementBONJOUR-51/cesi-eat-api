@@ -26,6 +26,8 @@ CREATE TABLE `Address` (
 	`street_number` INT NOT NULL,
 	`lati` FLOAT,
 	`longi` FLOAT,
+    `date_in` DATE NOT NULL DEFAULT (CURRENT_DATE),
+    `date_out` DATE,
 	PRIMARY KEY (`id`)
 );
 
@@ -38,6 +40,8 @@ CREATE TABLE `Roles` (
     `sales_department` BOOLEAN NOT NULL DEFAULT false,
     `technical_department` BOOLEAN NOT NULL DEFAULT false,
     `developer_tier` BOOLEAN NOT NULL DEFAULT false,
+    `date_in` DATE NOT NULL DEFAULT (CURRENT_DATE),
+    `date_out` DATE,
 	PRIMARY KEY (`id`)
 );
 

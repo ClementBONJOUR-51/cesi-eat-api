@@ -1,6 +1,6 @@
 version: "3"
 services:
-  server1:
+  auth1:
     build:
       context: ./service-auth
       dockerfile: Dockerfile
@@ -8,7 +8,9 @@ services:
       - "1111:3000"
     networks:
       - net
-  server2:
+    depends_on:  
+      - mysql
+  auth2:
     build:
       context: ./service-auth
       dockerfile: Dockerfile
@@ -16,14 +18,48 @@ services:
       - "2222:3000"
     networks:
       - net
-  # server3:
+    depends_on:  
+      - mysql
+  # auth3:
   #   build:
-  #     context: ./authentification
+  #     context: ./service-auth
   #     dockerfile: Dockerfile
   #   ports:
   #     - "3333:3000"
   #   networks:
   #     - net
+    # depends_on:  
+    #   - mysql
+  orders1:
+    build:
+      context: ./service-order
+      dockerfile: Dockerfile
+    ports:
+      - "4444:3000"
+    networks:
+      - net
+    depends_on:  
+      - mongodb
+  orders2:
+    build:
+      context: ./service-order
+      dockerfile: Dockerfile
+    ports:
+      - "5555:3000"
+    networks:
+      - net
+    depends_on:  
+      - mongodb
+  # orders3:
+  #   build:
+  #     context: ./service-order
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "6666:3000"
+  #   networks:
+  #     - net
+    # depends_on:  
+    #   - mongodb
   main_server:
     build:
       context: ./load-balancer
@@ -32,12 +68,14 @@ services:
       - "3000:3000"
     networks:
       - net
+    depends_on:  
+      - mysql
   mysql:
     build:
       context: ./mysql-db
       dockerfile: Dockerfile
     ports:
-      - "33060:3306"
+      - "3306:3306"
     networks:
       - net
   mongodb:
