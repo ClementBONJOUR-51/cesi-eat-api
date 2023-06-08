@@ -1,6 +1,8 @@
 import Server from './Server';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import express, { Express, Request, Response, NextFunction } from 'express';
+import httpProxy from 'http-proxy';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+
 
 
 export class LoadBalancer {
@@ -44,38 +46,61 @@ export class LoadBalancer {
     }
 
     public start(): void {
-        // Function to generate middleware for each route
-        const generateMiddleware = () => {
+        this._appExpress.use(express.json()); // Ajouter ce middleware pour analyser le corps en tant que JSON
+
+        const generateRoutes = () => {
+            const allRoutes = new Set<string>(this.getAllRoutes(this._servers));
+
             const excludedRoutes = ['/register', '/unregister'];
 
-            this._appExpress._router.stack = this._appExpress._router.stack.filter(
-                (layer: any) => {
-                    if (layer.route) {
-                        return excludedRoutes.includes(layer.route.path);
+            // Remove existing routes (excluding excludedRoutes)
+            this._appExpress._router.stack = this._appExpress._router.stack.filter((layer: any) => {
+                if (layer.route) {
+                    const path = layer.route.path;
+                    if (!excludedRoutes.includes(path)) {
+                        allRoutes.add(path);
+                        return false;
                     }
-                    return true;
                 }
-            );
+                return true;
+            });
 
-            this.getAllRoutes(this._servers).forEach((route: string) => {
-                this._appExpress.use(route, (req: Request, res: Response, next: NextFunction) => {
-                    const nextTarget = this.chooseServer(route);
-                    if (!nextTarget) {
-                        console.error('Tous les serveurs ' + route + ' sont indisponibles');
-                        res.status(500).send('Tous les serveurs ' + route + ' sont indisponibles');
-                        return;
+
+            // Créer une instance de httpProxy
+            const proxy = httpProxy.createProxyServer({});
+
+            // Générer les nouvelles routes avec la redirection personnalisée
+            this.servers.forEach((server: Server) => {
+                server.getRoutes().forEach((route: string) => {
+                    const selectedServer = this.chooseServer(route);
+                    if (selectedServer) {
+                        this._appExpress.use(
+                            route,
+                            createProxyMiddleware({
+                                target: selectedServer.url,
+                                changeOrigin: true,
+                                onProxyReq: (proxyReq, req, res) => {
+                                    if (req.body) {
+                                        const bodyData = JSON.stringify(req.body);
+                                        proxyReq.setHeader('Content-Type', 'application/json');
+                                        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                                        proxyReq.write(bodyData);
+                                    }
+                                },
+                            })
+                        );
                     }
-                    this.redirectRequest(req, res, nextTarget);
                 });
             });
+
+            const existingRoutes = Array.from(allRoutes);
+            console.log('Existing routes:', existingRoutes);
         };
 
-        this._appExpress.use(express.json()); // Ajouter ce middleware pour analyser le corps de la requête en tant que JSON
 
         this._appExpress.post("/register", (req: Request, res: Response, next: NextFunction) => {
             const ip = req.body.url as string;
             const routes: string[] = req.body.routes as string[];
-            console.log(routes, ip);
             if (!ip || !routes) {
                 res.status(400).send('Paramètres manquants');
                 return;
@@ -85,7 +110,7 @@ export class LoadBalancer {
             res.status(200).send('Serveur enregistré');
 
             // Update routes after registering a new server
-            generateMiddleware();
+            generateRoutes();
 
         });
 
@@ -104,7 +129,7 @@ export class LoadBalancer {
             res.status(200).send('Serveur supprimé');
 
             // Update routes after unregistering a server
-            generateMiddleware();
+            generateRoutes();
         });
 
 
@@ -133,25 +158,6 @@ export class LoadBalancer {
 
         return selectedServer;
     }
-
-    private redirectRequest = (req: Request, res: Response, targetServer: Server): void => {
-        createProxyMiddleware({
-            target: targetServer.url,
-            changeOrigin: true
-        })(req, res, (error) => {
-            console.error('Erreur lors de la redirection vers le serveur:', error);
-            targetServer.status = 'DOWN';
-            this.getCPU().then(() => {
-                const newNextTarget: Server | null = this.chooseServer(req.originalUrl);
-                if (newNextTarget) {
-                    this.redirectRequest(req, res, newNextTarget);
-                } else {
-                    // Aucun serveur disponible avec la route spécifiée
-                    res.status(500).send('Aucun serveur disponible pour traiter la requête.');
-                }
-            });
-        });
-    };
 
     private getCPU = async (): Promise<void> => {
         const promises = this._servers.map((server) => server.updateCPU(this._maxWaitTime));

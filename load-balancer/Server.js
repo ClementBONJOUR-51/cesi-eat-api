@@ -11,15 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Server = void 0;
 class Server {
-    constructor(url, type) {
+    constructor(url, map) {
         this.url = url;
-        this.type = type;
+        this.routes = map;
         this.cpu = 0;
         this.status = 'DOWN'; // UP | DOWN | POOR
         this.message = '';
         this.requestInProgress = false;
-        // The POOR status is set when the request takes more than 5 seconds. We don't know if the server is down or not for the moment.
-        // The DOWN status is set when the request returns an error (!= 200).
     }
     updateCPU(maxWaitTime) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -61,8 +59,9 @@ class Server {
             }
         });
     }
+    getRoutes() { return this.routes; }
     getPrint() {
-        return `SERVER || URL: ${this.url.split('/')[2]} || TYPE: ${this.type.slice(0, 4)} || CPU: ${this.cpu.toFixed(2)} || REQUEST: ${this.requestInProgress ? '⏳' : '✅'} || STATUS: ${this.status} ${this.status === 'GOOD' ? '✅' : this.status === 'POOR' ? '⚠️' : '❌'} ${this.message ? ' -> ' + this.message : ''} \n`;
+        return `SERVER || URL: ${this.url.split('/')[2]} || CPU: ${this.cpu.toFixed(2)} || REQUEST: ${this.requestInProgress ? '⏳' : '✅'} || STATUS: ${this.status} ${this.status === 'GOOD' ? '✅' : this.status === 'POOR' ? '⚠️' : '❌'} ${this.message ? ' -> ' + this.message : ''} \n`;
     }
 }
 exports.Server = Server;
