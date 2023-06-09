@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
     order_state : String,
     // id_address : mongoose.Schema.Types.ObjectId,
     products : {
-        type : [mongoose.Schema.Types.ObjectId],
+        type : [{ type : ObjectId, ref: 'Product' }],
     },
     customer : {
         id_customer : Number,
