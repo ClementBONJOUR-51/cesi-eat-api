@@ -6,18 +6,24 @@ const User = require('../models/user.model.js');
 app.use(express.json());
 
 User.findAll = (req, res) => {
-    con.query('SELECT * FROM cesi.Users WHERE date_out IS NULL', (err, result) => {
-      if (err) {
-        res.send('error');
-        console.log(err);
-      } else {
-        const totalCount = result.length; // Nombre total de résultats
-        res.setHeader('X-Total-Count', totalCount); // Définition de l'en-tête "X-Total-Count"
-        res.send(result);
-      }
-    });
-  };
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
 
+    const offset = (page - 1) * limit;
+
+    const query = "SELECT * FROM cesi.Users WHERE date_out IS NULL LIMIT ${limit} OFFSET ${offset}";
+
+    con.query(query, (err, result) => {
+        if (err) {
+            res.send('error');
+            console.log(err);
+        } else {
+            const totalCount = result.length; // Nombre total de résultats
+            res.setHeader('X-Total-Count', totalCount); // Définition de l'en-tête "X-Total-Count"
+            res.send(result);
+        }
+    });
+};
 User.findOne = (req, res) => { // Pour afficher un utilisateur
     con.query('SELECT * FROM `cesi`.`Users` WHERE id = ? AND date_out IS NULL', req.params.id, (err, result) => {
         if (err){

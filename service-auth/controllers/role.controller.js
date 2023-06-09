@@ -10,8 +10,10 @@ Role.findAll = (req, res) => { // Pour afficher tous les utilisateurs
             res.send('error');
             console.log(err);
         }else{
+            const totalCount = result.length; // Nombre total de résultats
+            res.setHeader('X-Total-Count', totalCount); // Définition de l'en-tête "X-Total-Count"
             res.send(result);
-        }
+    }
 });
 };
 

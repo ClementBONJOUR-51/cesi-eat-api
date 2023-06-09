@@ -6,11 +6,8 @@ const schema = new mongoose.Schema({
     // id_delivery_person : mongoose.Schema.Types.ObjectId,
     order_state : String,
     // id_address : mongoose.Schema.Types.ObjectId,
-    product : {
-        type: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product'
-        }]
+    products : {
+        type : [mongoose.Schema.Types.ObjectId],
     },
     customer : {
         id_customer : Number,

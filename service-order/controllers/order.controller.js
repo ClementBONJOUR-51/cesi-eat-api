@@ -36,9 +36,7 @@ const createOrder = async (req, res) => {
         order_state : req.body.order_state,
         // id_address : req.body.id_address,
         products : [
-            {
-                id_product : req.body.product.id_product
-            }
+            req.body.product.id_product
         ],
         customer : {
             id_customer : req.body.customer.id_customer,
@@ -84,10 +82,8 @@ const updateOrder = async (req, res) => {
         // order.id_delivery_person = req.body.id_delivery_person,
         order.order_state = req.body.order_state,
         // order.id_address = req.body.id_address,
-        order.product = [
-            {
-                id_product : req.body.product.id_product
-            }
+        order.products = [
+            req.body.product.id_product
         ],
         order.customer = {
             id_cutosmer : req.body.customer.id_customer,
