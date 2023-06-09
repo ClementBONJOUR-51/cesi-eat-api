@@ -83,7 +83,7 @@ services:
       context: ./mongodb-db
       dockerfile: Dockerfile
     ports:
-      - '27017:27017'
+      - '27018:27017'
     networks:
       - net
     

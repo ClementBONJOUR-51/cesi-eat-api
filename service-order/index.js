@@ -1,24 +1,20 @@
-const mongoose = require("mongoose");
-const express = require("express")
+const mongoose = require('mongoose');
+const con = require('./connexion_mongoDB');
+const routerOrder = require('./routes/order.route');
+const routerProduct = require('./routes/product.route');
+const routerRestorant = require('./routes/restorant.route');
+const os = require("os");
+
+
+const express = require('express');
+const app = express();
+app.use(express.json());
+
 const port = 3000;
 
+app.use(routerOrder);
+app.use(routerProduct);
+app.use(routerRestorant);
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-mongoose
-    .connect("mongodb://127.0.0.1:27017/test_mongoose", {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    })
-    .then(() => {
-        console.log("Connected to MongoDB");
-        const app = express()
 
-        //middleware
-        app.use(express.json());
-
-        //routes
-        // app.use(postRoutes);
-        app.use(OrderRoutes);
-
-        app.listen(port, () => console.log(`Example app listening on port ${port}!`));
-    })
-    .catch(err => console.error("Connection error", err));
