@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
-    id_restorant : mongoose.Schema.Types.ObjectId,
+    id_restorant : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Restorant'
+      },
     product_name : String,
     product_price : Number,
     product_category : String,

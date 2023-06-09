@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
-    id_restorant : mongoose.Schema.Types.ObjectId,
+    id_restorant : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Restorant'
+      },
     // id_customer : mongoose.Schema.Types.ObjectId,
     // id_delivery_person : mongoose.Schema.Types.ObjectId,
     order_state : String,

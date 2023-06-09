@@ -72,4 +72,28 @@ const deleteProduct = async (req, res) => {
     }
 }
 
-module.exports = { getAllProducts, getOneProduct, createProduct, updateProduct, deleteProduct };
+// getProductsWithRestorant
+const getProductsWithRestorant = async (req, res) => {
+    try {
+        const products = await Product.find({ date_out: null }).populate("id_restorant");
+        const count = await Product.countDocuments({ date_out: null });
+        res.status(200).json({ products, count });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const getOneProductWithRestorant = async (req, res) => {
+    try {
+        const product = await Product.findOne({
+            _id: req.params.id,
+            date_out: null
+        }).populate("id_restorant");
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+
+module.exports = { getAllProducts, getOneProduct, createProduct, updateProduct, deleteProduct, getProductsWithRestorant, getOneProductWithRestorant };

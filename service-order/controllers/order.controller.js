@@ -75,15 +75,14 @@ const createOrder = async (req, res) => {
 //update Order
 const updateOrder = async (req, res) => {
     try {
+        const productIds = req.body.products.map(product => product.id_product);
         const order = await Order.findById(req.params.id);
         order.id_restorant = req.body.id_restorant,
         // order.id_customer = req.body.id_customer,
         // order.id_delivery_person = req.body.id_delivery_person,
         order.order_state = req.body.order_state,
         // order.id_address = req.body.id_address,
-        order.products = [
-            req.body.product.id_product
-        ],
+        order.products = productIds,
         order.customer = {
             id_cutosmer : req.body.customer.id_customer,
             firstname : req.body.customer.firstname,
@@ -128,4 +127,51 @@ const deleteOrder = async (req, res) => {
     }
 }
 
-module.exports = { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder };
+const getOrdersWithProducts = async (req, res) => { //populate products pour une commande
+    try {
+        const orders = await Order.find({ date_out: null }).populate("products"); // polutate sert a recuperer les infos de l'objet
+        const count = await Order.countDocuments({ date_out: null });
+        res.status(200).json({ orders, count });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+// getOneOrderWithProducts
+const getOneOrderWithProducts = async (req, res) => {
+    try {
+        const order = await Order.findOne({
+            _id: req.params.id,
+            date_out: null
+        }).populate("products");
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+// getOrdersWithRestorant
+const getOrdersWithRestorants = async (req, res) => {
+    try {
+        const orders = await Order.find({ date_out: null }).populate("id_restorant");
+        const count = await Order.countDocuments({ date_out: null });
+        res.status(200).json({ orders, count });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+// getOneOrderWithRestorant
+const getOneOrderWithRestorant = async (req, res) => {
+    try {
+        const order = await Order.findOne({
+            _id: req.params.id,
+            date_out: null
+        }).populate("id_restorant");
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+module.exports = { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder, getOrdersWithProducts, getOneOrderWithProducts, getOrdersWithRestorants, getOneOrderWithRestorant };
