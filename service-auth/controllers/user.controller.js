@@ -41,7 +41,7 @@ User.create = (req, res) => { // créer un utilisateur
 };
 
 User.update = (req, res) => { // modifier un utilisateur
-    const data = [req.body.name, req.body.like, req.params.id]
+    const data = [req.body.firstname, req.body.lastname, req.body.gender, req.body.birthday, req.body.email, req.body.password, req.body.token, req.body.phone, req.body.id_sponsor, req.body.id_role, req.body.id_address, req.params.id]
     con.query('UPDATE `cesi`.`Users` SET `firstname`=?, `lastname`=?, `gender`=?, `birthday`=?, `email`=?, `password`=?, `token`=?, `phone`=?, `id_sponsor`=?, `id_role`=?, `id_address`=? WHERE `id`=?', data, (err, result) => {
         if (err){
             res.send('error');

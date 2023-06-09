@@ -4,11 +4,12 @@ const routerOrder = require('./routes/order.route');
 const routerProduct = require('./routes/product.route');
 const routerRestorant = require('./routes/restorant.route');
 const os = require("os");
-
+const cors = require("cors");
 
 const express = require('express');
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const port = 3000;
 

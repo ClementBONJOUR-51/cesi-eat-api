@@ -2,6 +2,7 @@ import Server from './Server';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import httpProxy from 'http-proxy';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+const cors = require("cors");
 
 
 
@@ -47,6 +48,7 @@ export class LoadBalancer {
 
     public start(): void {
         this._appExpress.use(express.json()); // Ajouter ce middleware pour analyser le corps en tant que JSON
+        this._appExpress.use(cors());
 
         const generateRoutes = () => {
             const allRoutes = new Set<string>(this.getAllRoutes(this._servers));
