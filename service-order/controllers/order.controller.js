@@ -29,15 +29,14 @@ const getOneOrder = async (req, res) => {
 
 //create Order
 const createOrder = async (req, res) => {
+    const productIds = req.body.products.map(product => product.id_product);
     const OrderObj = new Order({
         id_restorant : req.body.id_restorant,
         // id_customer : req.body.id_customer,
         // id_delivery_person : req.body.id_delivery_person,
         order_state : req.body.order_state,
         // id_address : req.body.id_address,
-        products : [
-            req.body.product.id_product
-        ],
+        products : productIds,
         customer : {
             id_customer : req.body.customer.id_customer,
             firstname : req.body.customer.firstname,
