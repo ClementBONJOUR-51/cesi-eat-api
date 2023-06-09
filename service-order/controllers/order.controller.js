@@ -31,10 +31,38 @@ const getOneOrder = async (req, res) => {
 const createOrder = async (req, res) => {
     const OrderObj = new Order({
         id_restorant : req.body.id_restorant,
-        id_customer : req.body.id_customer,
-        id_delivery_person : req.body.id_delivery_person,
+        // id_customer : req.body.id_customer,
+        // id_delivery_person : req.body.id_delivery_person,
         order_state : req.body.order_state,
-        id_address : req.body.id_address,
+        // id_address : req.body.id_address,
+        products : [
+            {
+                id_product : req.body.product.id_product
+            }
+        ],
+        customer : {
+            id_customer : req.body.customer.id_customer,
+            firstname : req.body.customer.firstname,
+            lastname : req.body.customer.lastname,
+            gender : req.body.customer.gender,
+            birthday : req.body.customer.birthday,
+            phone : req.body.customer.phone,
+            email : req.body.customer.email,
+        },
+        address : {
+            id_address : req.body.address.id_address,
+            street : req.body.address.street,
+            postal_code : req.body.address.postal_code,
+            city : req.body.address.city,
+            street_number : req.body.address.street_number,
+            lati : req.body.address.lati,
+            longi : req.body.address.longi,
+        },
+        delivery_person : {
+            id_delivery_person : req.body.delivery_person.id_delivery_person,
+            firstname : req.body.delivery_person.firstname,
+            lastname : req.body.delivery_person.lastname,
+        },
         invoice_number : req.body.invoice_number,
         discount : req.body.discount,
     });
@@ -52,10 +80,38 @@ const updateOrder = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
         order.id_restorant = req.body.id_restorant,
-        order.id_customer = req.body.id_customer,
-        order.id_delivery_person = req.body.id_delivery_person,
+        // order.id_customer = req.body.id_customer,
+        // order.id_delivery_person = req.body.id_delivery_person,
         order.order_state = req.body.order_state,
-        order.id_address = req.body.id_address,
+        // order.id_address = req.body.id_address,
+        order.product = [
+            {
+                id_product : req.body.product.id_product
+            }
+        ],
+        order.customer = {
+            id_cutosmer : req.body.customer.id_customer,
+            firstname : req.body.customer.firstname,
+            lastname : req.body.customer.lastname,
+            gender : req.body.customer.gender,
+            birthday : req.body.customer.birthday,
+            phone : req.body.customer.phone,
+            email : req.body.customer.email,
+        },
+        order.address = {
+            id_address : req.body.address.id_address,
+            street : req.body.address.street,
+            postal_code : req.body.address.postal_code,
+            city : req.body.address.city,
+            street_number : req.body.address.street_number,
+            lati : req.body.address.lati,
+            longi : req.body.address.longi,
+        },
+        order.delivery_person = {
+            id_delivery_person : req.body.delivery_person.id_delivery_person,
+            firstname : req.body.delivery_person.firstname,
+            lastname : req.body.delivery_person.lastname,
+        },
         order.invoice_number = req.body.invoice_number,
         order.discount = req.body.discount,
         await order.save();

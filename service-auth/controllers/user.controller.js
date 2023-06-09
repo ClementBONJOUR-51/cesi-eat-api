@@ -5,16 +5,18 @@ const app = express();
 const User = require('../models/user.model.js');
 app.use(express.json());
 
-User.findAll = (req, res) => { // Pour afficher tous les utilisateurs
-    con.query('SELECT * FROM `cesi`.`Users` WHERE date_out IS NULL ', (err, result) => {
-        if (err){
-            res.send('error');
-            console.log(err);
-        }else{
-            res.send(result);
-        }
-});
-};
+User.findAll = (req, res) => {
+    con.query('SELECT * FROM cesi.Users WHERE date_out IS NULL', (err, result) => {
+      if (err) {
+        res.send('error');
+        console.log(err);
+      } else {
+        const totalCount = result.length; // Nombre total de résultats
+        res.setHeader('X-Total-Count', totalCount); // Définition de l'en-tête "X-Total-Count"
+        res.send(result);
+      }
+    });
+  };
 
 User.findOne = (req, res) => { // Pour afficher un utilisateur
     con.query('SELECT * FROM `cesi`.`Users` WHERE id = ? AND date_out IS NULL', req.params.id, (err, result) => {
@@ -95,7 +97,7 @@ User.findAllRolesUsers = (req, res) => { // Pour afficher des utilisateurs et le
 };
 
 User.findUserAddress = (req, res) => { // Pour afficher l'adresse d'un utilisateur
-    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = User.id_address WHERE Users.id = ? AND Users.date_out IS NULL', req.params.id, (err, result) => {
+    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = Users.id_address WHERE Users.id = ? AND Users.date_out IS NULL', req.params.id, (err, result) => {
         if (err){
             res.send('error');
             console.log(err);
@@ -106,7 +108,7 @@ User.findUserAddress = (req, res) => { // Pour afficher l'adresse d'un utilisate
 };
 
 User.findAllUsersAddresses = (req, res) => { // Pour afficher les adresses des utilisateurs
-    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = User.id_address WHERE Users.date_out IS NULL', req.params.id, (err, result) => {
+    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = Users.id_address WHERE Users.date_out IS NULL', req.params.id, (err, result) => {
         if (err){
             res.send('error');
             console.log(err);
