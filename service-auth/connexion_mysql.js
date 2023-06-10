@@ -16,8 +16,9 @@ class Database {
   connect() {
     this.connection.connect((err) => {
       if (err) {
-        console.log("Not connected");
-        console.log(err);
+        console.error("Not connected");
+        console.error(err);
+        throw new Error("Failed to connect to the database"); // Génère une erreur et arrête l'exécution du serveur Node
       } else {
         console.log("Connected");
       }

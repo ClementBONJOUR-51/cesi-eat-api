@@ -17,4 +17,5 @@ mongoose
     })
     .catch((error) => {
         console.error('Erreur de connexion à la base de données MongoDB:', error);
+        throw new Error("Failed to connect to the database"); // Génère une erreur et arrête l'exécution du serveur Node
     });

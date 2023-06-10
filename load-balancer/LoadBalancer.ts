@@ -1,10 +1,7 @@
 import Server from './Server';
 import express, { Express, Request, Response, NextFunction } from 'express';
-import httpProxy from 'http-proxy';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 const cors = require("cors");
-
-
 
 export class LoadBalancer {
     private _servers: Server[];
@@ -46,59 +43,59 @@ export class LoadBalancer {
         return Array.from(allRoutes);
     }
 
+    private generateRoutes(): void {
+        const allRoutes = new Set<string>(this.getAllRoutes(this._servers));
+
+        const excludedRoutes = ['/register', '/unregister', '/getServers'];
+
+        // Remove existing routes (excluding excludedRoutes)
+        this._appExpress._router.stack = this._appExpress._router.stack.filter((layer: any) => {
+            if (layer.route) {
+                const path = layer.route.path;
+                if (!excludedRoutes.includes(path)) {
+                    allRoutes.add(path);
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        // Générer les nouvelles routes avec la redirection personnalisée
+        this._servers.forEach((server: Server) => {
+            server.getRoutes().forEach((route: string) => {
+                const selectedServer = this.chooseServer(route);
+                if (selectedServer) {
+                    this._appExpress.use(
+                        route,
+                        createProxyMiddleware({
+                            target: selectedServer.url,
+                            changeOrigin: true,
+                            onProxyReq: (proxyReq, req, res) => {
+                                if (req.body) {
+                                    const bodyData = JSON.stringify(req.body);
+                                    proxyReq.setHeader('Content-Type', 'application/json');
+                                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                                    proxyReq.write(bodyData);
+                                }
+                            },
+                        })
+                    );
+                }
+            });
+        });
+
+        const existingRoutes = Array.from(allRoutes);
+        console.log('Existing routes:', existingRoutes);
+    }
+
     public start(): void {
-        this._appExpress.use(express.json()); // Ajouter ce middleware pour analyser le corps en tant que JSON
+        this._appExpress.use(express.json());
         this._appExpress.use(cors());
 
-        const generateRoutes = () => {
-            const allRoutes = new Set<string>(this.getAllRoutes(this._servers));
-
-            const excludedRoutes = ['/register', '/unregister'];
-
-            // Remove existing routes (excluding excludedRoutes)
-            this._appExpress._router.stack = this._appExpress._router.stack.filter((layer: any) => {
-                if (layer.route) {
-                    const path = layer.route.path;
-                    if (!excludedRoutes.includes(path)) {
-                        allRoutes.add(path);
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-
-            // Créer une instance de httpProxy
-            const proxy = httpProxy.createProxyServer({});
-
-            // Générer les nouvelles routes avec la redirection personnalisée
-            this.servers.forEach((server: Server) => {
-                server.getRoutes().forEach((route: string) => {
-                    const selectedServer = this.chooseServer(route);
-                    if (selectedServer) {
-                        this._appExpress.use(
-                            route,
-                            createProxyMiddleware({
-                                target: selectedServer.url,
-                                changeOrigin: true,
-                                onProxyReq: (proxyReq, req, res) => {
-                                    if (req.body) {
-                                        const bodyData = JSON.stringify(req.body);
-                                        proxyReq.setHeader('Content-Type', 'application/json');
-                                        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-                                        proxyReq.write(bodyData);
-                                    }
-                                },
-                            })
-                        );
-                    }
-                });
-            });
-
-            const existingRoutes = Array.from(allRoutes);
-            console.log('Existing routes:', existingRoutes);
-        };
-
+        this._appExpress.get("/getServers", (req: Request, res: Response, next: NextFunction) => {
+            const serversWithInfo = this._servers.map((server: Server) => (server));
+            res.json(serversWithInfo);
+        });
 
         this._appExpress.post("/register", (req: Request, res: Response, next: NextFunction) => {
             const ip = req.body.url as string;
@@ -112,8 +109,7 @@ export class LoadBalancer {
             res.status(200).send('Serveur enregistré');
 
             // Update routes after registering a new server
-            generateRoutes();
-
+            this.generateRoutes();
         });
 
         this._appExpress.post("/unregister", (req: Request, res: Response, next: NextFunction) => {
@@ -131,9 +127,8 @@ export class LoadBalancer {
             res.status(200).send('Serveur supprimé');
 
             // Update routes after unregistering a server
-            generateRoutes();
+            this.generateRoutes();
         });
-
 
         this._appExpress.listen(this._port, () => {
             console.log('Server running on port ' + this._port + ' ✅\n\n\n');
@@ -141,7 +136,6 @@ export class LoadBalancer {
 
         this.getCPU();
         setInterval(() => this.getCPU(), this._healthCheckingInterval);
-        //setInterval(() => this.printLog(), 1000);
     }
 
     private chooseServer = (route: string): Server | null => {
@@ -164,13 +158,5 @@ export class LoadBalancer {
     private getCPU = async (): Promise<void> => {
         const promises = this._servers.map((server) => server.updateCPU(this._maxWaitTime));
         await Promise.allSettled(promises);
-    };
-
-    private printLog = (): void => {
-        process.stdout.moveCursor(0, -3);
-        this._servers.forEach((server) => {
-            process.stdout.clearLine(0);
-            process.stdout.write(server.getPrint());
-        });
     };
 }
