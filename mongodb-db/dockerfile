@@ -3,4 +3,6 @@ FROM mongo:latest
 ENV MONGO_INITDB_ROOT_USERNAME=admin
 ENV MONGO_INITDB_ROOT_PASSWORD=password
 
+ADD ./mongodb_scripts/data.js /docker-entrypoint-initdb.d/data.js
+
 EXPOSE 27017

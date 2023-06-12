@@ -1,0 +1,50 @@
+[{
+  "_id": {
+    "$oid": "6482e91dbddd4342c664605a"
+  },
+  "id_restorant": {
+    "$oid": "6482ee72e97502e92a6de361"
+  },
+  "product_name": "Carotte",
+  "product_price": 5,
+  "product_category": "Légume",
+  "date_out": {
+    "$date": "2023-06-09T08:57:46.701Z"
+  },
+  "date_in": {
+    "$date": "2023-06-09T08:55:57.709Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6482e92ebddd4342c664605c"
+  },
+  "id_restorant": {
+    "$oid": "6482ee8ae97502e92a6de363"
+  },
+  "product_name": "Patate",
+  "product_price": 10,
+  "product_category": "Légume",
+  "date_out": null,
+  "date_in": {
+    "$date": "2023-06-09T08:56:14.363Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6482e99bbddd4342c6646064"
+  },
+  "id_restorant": {
+    "$oid": "6482ee8ae97502e92a6de363"
+  },
+  "product_name": "Carotte",
+  "product_price": 5,
+  "product_category": "Légume",
+  "date_out": null,
+  "date_in": {
+    "$date": "2023-06-09T08:58:03.338Z"
+  },
+  "__v": 0
+}]
