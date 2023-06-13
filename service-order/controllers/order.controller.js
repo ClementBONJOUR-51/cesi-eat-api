@@ -35,6 +35,7 @@ const createOrder = async (req, res) => {
         // id_customer : req.body.id_customer,
         // id_delivery_person : req.body.id_delivery_person,
         order_state : req.body.order_state,
+        paid : req.body.paid,
         // id_address : req.body.id_address,
         products : productIds,
         customer : {
@@ -81,6 +82,7 @@ const updateOrder = async (req, res) => {
         // order.id_customer = req.body.id_customer,
         // order.id_delivery_person = req.body.id_delivery_person,
         order.order_state = req.body.order_state,
+        order.paid = req.body.paid,
         // order.id_address = req.body.id_address,
         order.products = productIds,
         order.customer = {

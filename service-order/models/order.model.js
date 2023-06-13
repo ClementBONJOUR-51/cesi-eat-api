@@ -8,6 +8,7 @@ const schema = new mongoose.Schema({
     // id_customer : mongoose.Schema.Types.ObjectId,
     // id_delivery_person : mongoose.Schema.Types.ObjectId,
     order_state : String,
+    paid : Boolean,
     // id_address : mongoose.Schema.Types.ObjectId,
     products: [{
         type: mongoose.Schema.Types.ObjectId,
