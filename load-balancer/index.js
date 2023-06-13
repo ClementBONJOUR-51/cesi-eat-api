@@ -1,10 +1,10 @@
-const { Server } = require('./Server');
+const { Server } = require('./Service');
 const { LoadBalancer } = require('./LoadBalancer');
 
 const servers = [
-  // new Server('http://server1:3000', ['/login', '/token']),
-  // new Server('http://server2:3000', ['/login', '/token', '/Orders', '/Orders:{id}']),
-  // new Server('http://server3:3000', ['/Orders', '/Orders:{id}']),
+  // new Server('https://cesi-eat-app-1-test.glitch.me', ["/login","/token"]),
+  // new Server('https://cesi-eat-app-2-test.glitch.me', ["/login","/token"]),
+  // new Server('https://cesi-eat-app-3-test.glitch.me', ["/orders","/order"])
 ];
 
 const loadBalancer = new LoadBalancer(3000, 10, 5);

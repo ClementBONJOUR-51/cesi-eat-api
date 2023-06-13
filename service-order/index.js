@@ -12,10 +12,19 @@ app.use(express.json());
 app.use(cors());
 
 const port = 3000;
+var cpuUsage = null;
 
 app.use(routerOrder);
 app.use(routerProduct);
 app.use(routerRestorant);
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.get("/getCPU", (req, res) => {
+    res.send({ cpu: cpuUsage });
+});
 
-
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}!`)
+    setInterval(() => {
+        cpuUsage = os.loadavg()[0];
+    }, 10000);
+}
+);

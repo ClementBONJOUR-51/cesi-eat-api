@@ -13,46 +13,61 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoadBalancer = void 0;
-const Server_1 = __importDefault(require("./Server"));
+const Service_1 = __importDefault(require("./Service"));
+const http_proxy_middleware_1 = require("http-proxy-middleware");
 const express_1 = __importDefault(require("express"));
-const http_proxy_1 = __importDefault(require("http-proxy"));
+const cors = require('cors');
 class LoadBalancer {
     constructor(port = 3000, healthCheckingInterval = 10, maxWaitTime = 5) {
+        this.generateRoutes = () => {
+            var _a;
+            const exludeRoutes = ['/register', '/unregister', '/getServers'];
+            // Supprimer toutes les routes existantes
+            (_a = this._appExpress._router) === null || _a === void 0 ? void 0 : _a.stack.forEach((layer, index, routes) => {
+                if (layer.route) {
+                    const routePath = layer.route.path;
+                    // Vérifier si la route est exclue
+                    if (!exludeRoutes.includes(routePath)) {
+                        routes.splice(index, 1); // Supprimer la route
+                    }
+                }
+            });
+            this.getAllRoutes(this._servers).forEach((route) => {
+                this._appExpress.use(route, (req, res, next) => {
+                    const targetServer = this.chooseServer(route);
+                    if (targetServer) {
+                        (0, http_proxy_middleware_1.createProxyMiddleware)({
+                            target: targetServer.url,
+                            changeOrigin: true,
+                            onProxyReq: (proxyReq, req, res) => {
+                                if (req.body) {
+                                    const bodyData = JSON.stringify(req.body);
+                                    proxyReq.setHeader('Content-Type', 'application/json');
+                                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                                    proxyReq.write(bodyData);
+                                }
+                            }
+                        })(req, res, (error) => {
+                            console.error('Erreur lors de la redirection vers le serveur:', error);
+                            res.status(500).send('Erreur lors de la redirection vers le serveur');
+                        });
+                    }
+                });
+            });
+        };
         this.chooseServer = (route) => {
             let selectedServer = null;
             let minCPU = null;
             // Recherche du serveur avec le moins de charge CPU
             for (const server of this.servers) {
                 if (server.getRoutes().includes(route)) {
-                    if (minCPU === null || server.cpu < minCPU) {
+                    if ((minCPU === null || server.cpu < minCPU) && server.status === 'GOOD') {
                         minCPU = server.cpu;
                         selectedServer = server;
                     }
                 }
             }
             return selectedServer;
-        };
-        this.redirectRequest = (req, res, targetServer) => {
-            const proxy = http_proxy_1.default.createProxyServer({});
-            proxy.on('error', (error) => {
-                console.error('Erreur lors de la redirection vers le serveur:', error);
-                targetServer.status = 'DOWN';
-                this.getCPU().then(() => {
-                    const newNextTarget = this.chooseServer(req.originalUrl);
-                    if (newNextTarget) {
-                        this.redirectRequest(req, res, newNextTarget);
-                    }
-                    else {
-                        // Aucun serveur disponible avec la route spécifiée
-                        res.status(500).send('Aucun serveur disponible pour traiter la requête.');
-                    }
-                });
-            });
-            const targetOptions = {
-                target: targetServer.url,
-                changeOrigin: true
-            };
-            proxy.web(req, res, targetOptions);
         };
         this.getCPU = () => __awaiter(this, void 0, void 0, function* () {
             const promises = this._servers.map((server) => server.updateCPU(this._maxWaitTime));
@@ -91,44 +106,47 @@ class LoadBalancer {
         return Array.from(allRoutes);
     }
     start() {
-        // Function to generate middleware for each route
-        const generateMiddleware = () => {
-            const excludedRoutes = ['/register', '/unregister'];
-            this._appExpress._router.stack = this._appExpress._router.stack.filter((layer) => {
-                if (layer.route) {
-                    return excludedRoutes.includes(layer.route.path);
-                }
-                return true;
-            });
-            this.getAllRoutes(this._servers).forEach((route) => {
-                this._appExpress.use(route, (req, res, next) => {
-                    const nextTarget = this.chooseServer(route);
-                    if (!nextTarget) {
-                        console.error('Tous les serveurs ' + route + ' sont indisponibles');
-                        res.status(500).send('Tous les serveurs ' + route + ' sont indisponibles');
-                        return;
-                    }
-                    this.redirectRequest(req, res, nextTarget);
-                });
-            });
-        };
-        this._appExpress.use(express_1.default.json()); // Ajouter ce middleware pour analyser le corps de la requête en tant que JSON
+        this._appExpress.use(express_1.default.json());
+        this._appExpress.use(cors());
+        this._appExpress.use((req, res, next) => {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            res.header("Access-Control-Allow-Methods", "GET");
+            if (req.method === "OPTIONS")
+                return res.status(200).json({});
+            next();
+        });
+        this.getAllRoutes(this._servers).forEach((route) => {
+            console.log(`Route ${route} added`);
+        });
+        this.generateRoutes();
+        this._appExpress.use('/getServers', (req, res, next) => {
+            res.json(this._servers);
+        });
         this._appExpress.post("/register", (req, res, next) => {
-            const ip = req.body.url;
+            console.log(req.body);
+            const url = req.body.url;
             const routes = req.body.routes;
-            console.log(routes, ip);
-            if (!ip || !routes) {
+            if (!url || !routes) {
                 res.status(400).send('Paramètres manquants');
                 return;
             }
-            const server = new Server_1.default(ip, routes);
+            // Vérifier si l'URL du serveur existe déjà
+            const existingServer = this._servers.find(server => server.url === url);
+            if (existingServer) {
+                // console.log('Serveur déjà existant');
+                res.status(409).send('Serveur déjà existant');
+                return;
+            }
+            const server = new Service_1.default(url, routes);
             this.addServer(server);
             res.status(200).send('Serveur enregistré');
+            this.generateRoutes();
             // Update routes after registering a new server
-            generateMiddleware();
+            this.generateRoutes();
         });
         this._appExpress.post("/unregister", (req, res, next) => {
-            const url = req.query.url;
+            const url = req.body.url;
             if (!url) {
                 res.status(400).send('Paramètres manquants');
                 return;
@@ -141,14 +159,14 @@ class LoadBalancer {
             this.removeServer(server);
             res.status(200).send('Serveur supprimé');
             // Update routes after unregistering a server
-            generateMiddleware();
+            this.generateRoutes();
         });
         this._appExpress.listen(this._port, () => {
-            console.log('Server running on port ' + this._port + ' ✅\n\n\n');
+            console.log(`Load balancer listening on port ${this._port}`);
         });
         this.getCPU();
-        setInterval(() => this.getCPU(), this._healthCheckingInterval);
-        //setInterval(() => this.printLog(), 1000);
+        setInterval(this.getCPU, this._healthCheckingInterval);
+        // setInterval(this.printLog, 2000);
     }
 }
 exports.LoadBalancer = LoadBalancer;
