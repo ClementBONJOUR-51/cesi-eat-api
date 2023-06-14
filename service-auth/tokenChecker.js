@@ -28,28 +28,40 @@ module.exports = (allowedRoles) => {
         //foreach allowedroles and next() if decoded[i] === 1
         allowedRoles.forEach((role) => {
           if (decoded[role] === 1) {
-            nextok = true;
-            next();
-          }
-        });
+            nextok = true; 
+            if (req.params.id) { 
+              if (decoded.id === parseInt(req.params.id)) {
+                next();
+              }
+              else{
+                return res
+                .status(403)
+                .json({ error: true, message: "Unauthorized access." });
+              }
+            } else
+              next();
+            }
+            // Si paramètre id dans l'url alors on vérifie que l'utilisateur est bien le propriétaire de la ressource
+            // if (req.params.id) {
+            //   if (decoded.id === parseInt(req.params.id)) { 
+            //     console.log("decoded.id = " + decoded.id);
+            //     res.send("ok");
+            //     nextok = true;
+            //     next();
+            //   }
+            // } else {
+            //   return res
+            //     .status(403)
+            //     .json({ error: true, message: "Unauthorized access." });
+            // }
+            
+          });
         if (!nextok) {
           return res
             .status(403)
-          .json({ error: true, message: "Unauthorized access."});
-        
+            .json({ error: true, message: "Unauthorized access." });
         }
-      
 
-
-        // if (userCustomer === 1) {
-        //   // L'utilisateur a le rôle d'administrateur, continuez le traitement
-        //   next();
-        // } else {
-        //   // L'utilisateur n'a pas les autorisations nécessaires
-        //   return res
-        //     .status(403)
-        //     .json({ error: true, message: "Unauthorized access." });
-        // }
       });
     } else {
       // If there is no token

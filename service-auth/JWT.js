@@ -23,6 +23,11 @@ router.post("/login", (req, res) => {
         console.log(err);
       } else {
         console.log(result[0]);
+        if (result.length == 0) {
+          res.status(401).json({
+            error: "Invalid email or password",
+          });
+        } 
         const user = {
             id: result[0].id,
             firstname: result[0].firstname,

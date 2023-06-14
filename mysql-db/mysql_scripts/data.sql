@@ -12,7 +12,7 @@ CREATE TABLE `Users` (
     `phone` VARCHAR(20) NOT NULL,
     `date_in` DATE NOT NULL DEFAULT (CURRENT_DATE),
     `date_out` DATE,
-    `id_sponsor` INT,
+    `email_sponsor` VARCHAR(50),
     `id_role` INT NOT NULL,
     `id_address` INT NOT NULL,
     PRIMARY KEY (`id`)
