@@ -10,8 +10,10 @@ Address.findAll = (req, res) => { // Pour afficher tous les utilisateurs
             res.send('error');
             console.log(err);
         }else{
+            const totalCount = result.length; // Nombre total de résultats
+            res.setHeader('X-Total-Count', totalCount); // Définition de l'en-tête "X-Total-Count"
             res.send(result);
-        }
+    }
 });
 };
 
@@ -39,7 +41,7 @@ Address.create = (req, res) => { // créer un utilisateur
 };
 
 Address.update = (req, res) => { // modifier un utilisateur
-    const data = [req.body.name, req.body.like, req.params.id]
+    const data = [req.body.postal_code, req.body.street, req.body.city, req.body.street_number, req.body.lati, req.body.longi, req.params.id]
     con.query('UPDATE `cesi`.`Address` SET `postal_code`=?, `street`=?, `city`=?, `street_number`=?, `lati`=?, `longi`=? WHERE `id`=?', data, (err, result) => {
         if (err){
             res.send('error');

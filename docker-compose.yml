@@ -8,8 +8,9 @@ services:
       - "1111:3000"
     networks:
       - net
-    depends_on:  
+    depends_on:
       - mysql
+    restart: always
   auth2:
     build:
       context: ./service-auth
@@ -18,16 +19,17 @@ services:
       - "2222:3000"
     networks:
       - net
-    depends_on:  
+    depends_on:
       - mysql
-  # auth3:
-  #   build:
-  #     context: ./service-auth
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3333:3000"
-  #   networks:
-  #     - net
+    restart: always
+    # auth3:
+    #   build:
+    #     context: ./service-auth
+    #     dockerfile: Dockerfile
+    #   ports:
+    #     - "3333:3000"
+    #   networks:
+    #     - net
     # depends_on:  
     #   - mysql
   orders1:
@@ -38,8 +40,9 @@ services:
       - "4444:3000"
     networks:
       - net
-    depends_on:  
+    depends_on:
       - mongodb
+    restart: always
   orders2:
     build:
       context: ./service-order
@@ -48,16 +51,17 @@ services:
       - "5555:3000"
     networks:
       - net
-    depends_on:  
+    depends_on:
       - mongodb
-  # orders3:
-  #   build:
-  #     context: ./service-order
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "6666:3000"
-  #   networks:
-  #     - net
+    restart: always
+    # orders3:
+    #   build:
+    #     context: ./service-order
+    #     dockerfile: Dockerfile
+    #   ports:
+    #     - "6666:3000"
+    #   networks:
+    #     - net
     # depends_on:  
     #   - mongodb
   main_server:
@@ -68,8 +72,9 @@ services:
       - "3000:3000"
     networks:
       - net
-    depends_on:  
+    depends_on:
       - mysql
+    restart: always
   mysql:
     build:
       context: ./mysql-db
@@ -78,16 +83,18 @@ services:
       - "3306:3306"
     networks:
       - net
+    restart: always
   mongodb:
     build:
       context: ./mongodb-db
       dockerfile: Dockerfile
     ports:
-      - '27017:27017'
+      - '27018:27017'
     networks:
       - net
-    
+    restart: always
 
 networks:
   net:
+
 

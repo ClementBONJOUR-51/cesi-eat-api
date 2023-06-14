@@ -1,9 +1,7 @@
-import Server from './Server';
-import express, { Express, Request, Response, NextFunction } from 'express';
-import httpProxy from 'http-proxy';
+import Server from './Service';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-
-
+import express, { Express, Request, Response, NextFunction } from 'express';
+const cors = require('cors');
 
 export class LoadBalancer {
     private _servers: Server[];
@@ -45,77 +43,97 @@ export class LoadBalancer {
         return Array.from(allRoutes);
     }
 
-    public start(): void {
-        this._appExpress.use(express.json()); // Ajouter ce middleware pour analyser le corps en tant que JSON
+    private generateRoutes = () => {
+        const exludeRoutes: string[] = ['/register', '/unregister', '/getServers'];
 
-        const generateRoutes = () => {
-            const allRoutes = new Set<string>(this.getAllRoutes(this._servers));
-
-            const excludedRoutes = ['/register', '/unregister'];
-
-            // Remove existing routes (excluding excludedRoutes)
-            this._appExpress._router.stack = this._appExpress._router.stack.filter((layer: any) => {
-                if (layer.route) {
-                    const path = layer.route.path;
-                    if (!excludedRoutes.includes(path)) {
-                        allRoutes.add(path);
-                        return false;
-                    }
+        // Supprimer toutes les routes existantes
+        this._appExpress._router?.stack.forEach((layer: any, index: number, routes: any[]) => {
+            if (layer.route) {
+                const routePath = layer.route.path;
+                // Vérifier si la route est exclue
+                if (!exludeRoutes.includes(routePath)) {
+                    routes.splice(index, 1); // Supprimer la route
                 }
-                return true;
+            }
+        });
+
+        this.getAllRoutes(this._servers).forEach((route: string) => {
+            this._appExpress.use(route, (req: Request, res: Response, next: NextFunction) => {
+                const targetServer: Server | null = this.chooseServer(route);
+                if (targetServer) {
+                    createProxyMiddleware({
+                        target: targetServer.url,
+                        changeOrigin: true,
+                        onProxyReq: (proxyReq, req, res) => {
+                            if (req.body) {
+                                const bodyData = JSON.stringify(req.body);
+                                proxyReq.setHeader('Content-Type', 'application/json');
+                                proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                                proxyReq.write(bodyData);
+                            }
+                        }
+                    })(req, res, (error) => {
+                        console.error('Erreur lors de la redirection vers le serveur:', error);
+                        res.status(500).send('Erreur lors de la redirection vers le serveur');
+                    });
+                }
             });
+        });
+    }
 
 
-            // Créer une instance de httpProxy
-            const proxy = httpProxy.createProxyServer({});
+    public start(): void {
+        this._appExpress.use(express.json());
+        this._appExpress.use(cors());
+        this._appExpress.use((req, res, next) => {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            res.header("Access-Control-Allow-Methods", "GET");
 
-            // Générer les nouvelles routes avec la redirection personnalisée
-            this.servers.forEach((server: Server) => {
-                server.getRoutes().forEach((route: string) => {
-                    const selectedServer = this.chooseServer(route);
-                    if (selectedServer) {
-                        this._appExpress.use(
-                            route,
-                            createProxyMiddleware({
-                                target: selectedServer.url,
-                                changeOrigin: true,
-                                onProxyReq: (proxyReq, req, res) => {
-                                    if (req.body) {
-                                        const bodyData = JSON.stringify(req.body);
-                                        proxyReq.setHeader('Content-Type', 'application/json');
-                                        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-                                        proxyReq.write(bodyData);
-                                    }
-                                },
-                            })
-                        );
-                    }
-                });
-            });
+            if (req.method === "OPTIONS") return res.status(200).json({});
 
-            const existingRoutes = Array.from(allRoutes);
-            console.log('Existing routes:', existingRoutes);
-        };
+            next();
+        });
 
+
+        this.getAllRoutes(this._servers).forEach((route: string) => {
+            console.log(`Route ${route} added`);
+        });
+
+        this.generateRoutes();
+
+        this._appExpress.use('/getServers', (req: Request, res: Response, next: NextFunction) => {
+            res.json(this._servers);
+        });
 
         this._appExpress.post("/register", (req: Request, res: Response, next: NextFunction) => {
-            const ip = req.body.url as string;
+            console.log(req.body)
+            const url = req.body.url as string;
             const routes: string[] = req.body.routes as string[];
-            if (!ip || !routes) {
+            if (!url || !routes) {
                 res.status(400).send('Paramètres manquants');
                 return;
             }
-            const server: Server = new Server(ip, routes);
+
+            // Vérifier si l'URL du serveur existe déjà
+            const existingServer = this._servers.find(server => server.url === url);
+            if (existingServer) {
+                // console.log('Serveur déjà existant');
+                res.status(409).send('Serveur déjà existant');
+                return;
+            }
+
+            const server: Server = new Server(url, routes);
             this.addServer(server);
             res.status(200).send('Serveur enregistré');
+            this.generateRoutes();
 
             // Update routes after registering a new server
-            generateRoutes();
-
+            this.generateRoutes();
         });
 
         this._appExpress.post("/unregister", (req: Request, res: Response, next: NextFunction) => {
-            const url: string = req.query.url as string;
+            const url: string = req.body.url as string;
             if (!url) {
                 res.status(400).send('Paramètres manquants');
                 return;
@@ -129,18 +147,21 @@ export class LoadBalancer {
             res.status(200).send('Serveur supprimé');
 
             // Update routes after unregistering a server
-            generateRoutes();
+            this.generateRoutes();
         });
 
 
         this._appExpress.listen(this._port, () => {
-            console.log('Server running on port ' + this._port + ' ✅\n\n\n');
+            console.log(`Load balancer listening on port ${this._port}`);
         });
 
-        this.getCPU();
-        setInterval(() => this.getCPU(), this._healthCheckingInterval);
-        //setInterval(() => this.printLog(), 1000);
+        // this.getCPU();
+        setInterval(this.getCPU, this._healthCheckingInterval);
+        // setInterval(this.printLog, 2000);
+
+
     }
+
 
     private chooseServer = (route: string): Server | null => {
         let selectedServer: Server | null = null;
@@ -149,13 +170,12 @@ export class LoadBalancer {
         // Recherche du serveur avec le moins de charge CPU
         for (const server of this.servers) {
             if (server.getRoutes().includes(route)) {
-                if (minCPU === null || server.cpu < minCPU) {
+                if ((minCPU === null || server.cpu < minCPU) && server.status === 'GOOD') {
                     minCPU = server.cpu;
                     selectedServer = server;
                 }
             }
         }
-
         return selectedServer;
     }
 

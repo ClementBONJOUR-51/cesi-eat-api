@@ -8,7 +8,7 @@ CREATE TABLE `Users` (
     `birthday` DATE NOT NULL,
     `email` VARCHAR(50) NOT NULL,
     `password` VARCHAR(50) NOT NULL,
-    `token` VARCHAR(100),
+    `token` VARCHAR(10000),
     `phone` VARCHAR(20) NOT NULL,
     `date_in` DATE NOT NULL DEFAULT (CURRENT_DATE),
     `date_out` DATE,

@@ -10,8 +10,10 @@ Role.findAll = (req, res) => { // Pour afficher tous les utilisateurs
             res.send('error');
             console.log(err);
         }else{
+            const totalCount = result.length; // Nombre total de résultats
+            res.setHeader('X-Total-Count', totalCount); // Définition de l'en-tête "X-Total-Count"
             res.send(result);
-        }
+    }
 });
 };
 
@@ -39,7 +41,7 @@ Role.create = (req, res) => { // créer un utilisateur
 };
 
 Role.update = (req, res) => { // modifier un utilisateur
-    const data = [req.body.name, req.body.like, req.params.id]
+    const data = [req.body.customer, req.body.delivery_person, req.body.restorant, req.body.administrator, req.body.sales_department, req.body.technical_department, req.body.developer_tier, req.params.id]
     con.query('UPDATE `cesi`.`Roles` SET `customer`=?, `delivery_person`=?, `restorant`=?, `administrator`=?, `sales_department`=?, `technical_department`=?, `developer_tier`=? WHERE `id`=?', data, (err, result) => {
         if (err){
             res.send('error');

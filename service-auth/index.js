@@ -5,8 +5,12 @@ const mysql = require("mysql2");
 const database = require("./connexion_mysql");
 const connection = database.getConnection();
 const routerUser = require("./routes/user.route");
-// const routerAddress = require("./routes/address.route");
-// const routerRole = require("./routes/role.route");
+const routerAddress = require("./routes/address.route");
+const routerRole = require("./routes/role.route");
+const cors = require("cors");
+const routerjwt = require("./JWT");
+
+
 
 // Use the connection to execute queries, for example:
 // connection.query("SELECT * FROM Users", (err, results) => {
@@ -21,6 +25,7 @@ const routerUser = require("./routes/user.route");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 const port = 3000;
 
 var cpuUsage = null;
@@ -34,8 +39,9 @@ app.get("/getCPU", (req, res) => {
 });
 
 app.use(routerUser);
-// app.use(routerAddress);
-// app.use(routerRole);
+app.use(routerAddress);
+app.use(routerRole);
+app.use(routerjwt);
 
 
 app.listen(port, () => {

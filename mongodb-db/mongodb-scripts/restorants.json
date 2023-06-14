@@ -1,0 +1,28 @@
+[{
+    "_id": {
+      "$oid": "6482ee72e97502e92a6de361"
+    },
+    "restorant_name": "MACDO",
+    "restorant_type": "Fast Food",
+    "phone_number": "00000000000",
+    "date_out": {
+      "$date": "2023-06-09T09:19:32.254Z"
+    },
+    "date_in": {
+      "$date": "2023-06-09T09:18:42.484Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6482ee8ae97502e92a6de363"
+    },
+    "restorant_name": "MACDO1",
+    "restorant_type": "Food",
+    "phone_number": "00000000100",
+    "date_out": null,
+    "date_in": {
+      "$date": "2023-06-09T09:19:06.499Z"
+    },
+    "__v": 0
+  }]
