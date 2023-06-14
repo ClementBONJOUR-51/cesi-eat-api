@@ -4,6 +4,8 @@ const express = require('express');
 const app = express();
 const User = require('../models/user.model.js');
 app.use(express.json());
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
 User.findAll = (req, res) => {
     con.query('SELECT * FROM cesi.Users WHERE date_out IS NULL', (err, result) => {

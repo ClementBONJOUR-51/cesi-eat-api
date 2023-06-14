@@ -8,6 +8,7 @@ const routerUser = require("./routes/user.route");
 const routerAddress = require("./routes/address.route");
 const routerRole = require("./routes/role.route");
 const cors = require("cors");
+const routerjwt = require("./JWT");
 
 
 
@@ -40,6 +41,7 @@ app.get("/getCPU", (req, res) => {
 app.use(routerUser);
 app.use(routerAddress);
 app.use(routerRole);
+app.use(routerjwt);
 
 
 app.listen(port, () => {

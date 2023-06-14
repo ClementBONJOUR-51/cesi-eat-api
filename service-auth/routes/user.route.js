@@ -2,8 +2,10 @@ const express = require('express');
 var app = express();
 const router = express.Router();
 const User = require('../controllers/user.controller.js');
+const checkToken = require('../tokenChecker.js');
 
-router.get('/getUsers', User.findAll);
+
+router.get('/getUsers', checkToken, User.findAll);
 router.get('/getUser/:id', User.findOne);
 router.post('/createUser', User.create);
 router.put('/updateUser/:id', User.update);
