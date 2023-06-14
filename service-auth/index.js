@@ -30,10 +30,6 @@ const port = 3000;
 
 var cpuUsage = null;
 
-app.get("/login", (req, res) => {
-  res.send("Login ✅");
-});
-
 app.get("/getCPU", (req, res) => {
   res.send({ cpu: cpuUsage });
 });
