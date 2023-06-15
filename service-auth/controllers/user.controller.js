@@ -27,7 +27,7 @@ User.findAll = (req, res) => {
         } else {
           const totalCount = result.length; // Nombre total de résultats
           res.setHeader("X-Total-Count", totalCount); // Définition de l'en-tête "X-Total-Count"
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -54,7 +54,7 @@ User.findOne = (req, res) => {
             message: "L'utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result[0] });
+          res.send({ status: "success", "result": result[0] });
         }
       }
     }
@@ -91,25 +91,25 @@ User.create = (req, res) => {
       // console.log("Address", err);
       res.send({
         status: "error",
-        message: "Les données sont incorrectes !",
+        message: "Les données sont incorrectes dans l'adresse !",
         error: err,
       });
     } else {
       const addressId = addressResult.insertId;
 
       // créer role
-      const roleData = [
-        customer = req.body.customer,
-        delivery_person = req.body.delivery_person,
-        restorant = req.body.restorant,
-        administrator = req.body.administrator,
-        sales_department = req.body.sales_department,
-        technical_department = req.body.technical_department,
-        developer_tier = req.body.developer_tier,
-      ];
+      const roleData = {
+        customer : req.body.customer || 0,
+        delivery_person : req.body.delivery_person || 0,
+        restorant : req.body.restorant || 0,
+        administrator : req.body.administrator || 0,
+        sales_department : req.body.sales_department || 0,
+        technical_department : req.body.technical_department || 0,
+        developer_tier : req.body.developer_tier || 0,
+      };
 
       // Changer les null en 0
-      roleDataUpdate = roleData.map((elementRole) => {
+      roleDataUpdate = [roleData].map((elementRole) => {
         for (const key in elementRole) {
           if (elementRole[key] === null) {
             elementRole[key] = 0;
@@ -122,9 +122,10 @@ User.create = (req, res) => {
       // Table role
       con.query("INSERT INTO Roles SET ?", roleDataUpdate, (err, roleResult) => {
         if (err) {
+          console.log(roleDataUpdate);
           res.send({
             status: "error",
-            message: "Les données sont incorrectes !",
+            message: "Les données sont incorrectes dans roles !",
             error: err,
           });
         } else {
@@ -151,18 +152,18 @@ User.create = (req, res) => {
             if (err) {
               res.send({
                 status: "error",
-                message: "Les données sont incorrectes !",
+                message: "Les données sont incorrectes dans users !",
                 error: err,
               });
               // console.log(err);
             } else {
-              if (result.length == 0) {
+              if (userResult.length == 0) {
                 res.send({
                   status: "error",
                   message: "L'utilisateur n'a pas pu être ajouté !",
                 });
               } else {
-                res.send({ status: "success", result: result });
+                res.send({ status: "success", "result": userResult });
               }
             } // else
           });
@@ -206,7 +207,7 @@ User.update = (req, res) => {
             message: "Le compte utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -233,7 +234,7 @@ User.delete = (req, res) => {
             message: "Le compte utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -261,7 +262,7 @@ User.findRoleUser = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -288,7 +289,7 @@ User.findAllRolesUsers = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -315,7 +316,7 @@ User.findUserAddress = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -341,7 +342,7 @@ User.findAllUsersAddresses = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
