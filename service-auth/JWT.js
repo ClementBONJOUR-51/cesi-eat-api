@@ -18,14 +18,15 @@ router.post("/login", (req, res) => {
     [req.body.email, req.body.password],
     (err, result) => {
       if (err) {
-        res.send("error", err);
+        res.send({"error": err, "status" : "error", "message" : "Utilisateur introuvable"});
         // console.log(err);
       } else {
         // console.log(result[0]);
         if (result.length == 0) {
           res.status(401).json({
-            error: "Invalid email or password",
+            "message": "Email ou mot de passe invalide", "status" : "error"
           });
+
         }
         const user = {
           id: result[0].id,
@@ -48,8 +49,8 @@ router.post("/login", (req, res) => {
           expiresIn: config.tokenLife,
         });
         const response = {
-          status: "Logged in",
-          token: token,
+          status: "success",
+          response: token,
         };
         res.status(200).json(response);
       }

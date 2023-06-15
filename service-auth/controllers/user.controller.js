@@ -27,7 +27,7 @@ User.findAll = (req, res) => {
         } else {
           const totalCount = result.length; // Nombre total de résultats
           res.setHeader("X-Total-Count", totalCount); // Définition de l'en-tête "X-Total-Count"
-          res.send({ status: "success", "result": result });
+          res.send({ status: "success", result: result });
         }
       }
     }
@@ -54,7 +54,7 @@ User.findOne = (req, res) => {
             message: "L'utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", "result": result[0] });
+          res.send({ status: "success", result: result[0] });
         }
       }
     }
@@ -98,19 +98,29 @@ User.create = (req, res) => {
       const addressId = addressResult.insertId;
 
       // créer role
-      const roleData = {
-        customer: req.body.customer,
-        delivery_person: req.body.delivery_person,
-        restorant: req.body.restorant,
-        administrator: req.body.administrator,
-        sales_department: req.body.sales_department,
-        technical_department: req.body.technical_department,
-        developer_tier: req.body.developer_tier,
-      };
+      const roleData = [
+        customer = req.body.customer,
+        delivery_person = req.body.delivery_person,
+        restorant = req.body.restorant,
+        administrator = req.body.administrator,
+        sales_department = req.body.sales_department,
+        technical_department = req.body.technical_department,
+        developer_tier = req.body.developer_tier,
+      ];
+
+      // Changer les null en 0
+      roleDataUpdate = roleData.map((elementRole) => {
+        for (const key in elementRole) {
+          if (elementRole[key] === null) {
+            elementRole[key] = 0;
+          }
+        }
+        return elementRole;
+      });
 
       // Insérer le role dans la table users avec ID Role
       // Table role
-      con.query("INSERT INTO Roles SET ?", roleData, (err, roleResult) => {
+      con.query("INSERT INTO Roles SET ?", roleDataUpdate, (err, roleResult) => {
         if (err) {
           res.send({
             status: "error",
@@ -118,6 +128,8 @@ User.create = (req, res) => {
             error: err,
           });
         } else {
+          // Remplacer les valeurs null par 0 dans le résultat avant de l'utiliser
+
           const roleId = roleResult.insertId;
 
           const userData = {
@@ -150,7 +162,7 @@ User.create = (req, res) => {
                   message: "L'utilisateur n'a pas pu être ajouté !",
                 });
               } else {
-                res.send({ status: "success", "result": result });
+                res.send({ status: "success", result: result });
               }
             } // else
           });
@@ -194,7 +206,7 @@ User.update = (req, res) => {
             message: "Le compte utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", "result": result });
+          res.send({ status: "success", result: result });
         }
       }
     }
@@ -221,7 +233,7 @@ User.delete = (req, res) => {
             message: "Le compte utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", "result": result });
+          res.send({ status: "success", result: result });
         }
       }
     }
@@ -249,7 +261,7 @@ User.findRoleUser = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", "result": result });
+          res.send({ status: "success", result: result });
         }
       }
     }
@@ -276,7 +288,7 @@ User.findAllRolesUsers = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", "result": result });
+          res.send({ status: "success", result: result });
         }
       }
     }
@@ -303,7 +315,7 @@ User.findUserAddress = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", "result": result });
+          res.send({ status: "success", result: result });
         }
       }
     }
@@ -329,7 +341,7 @@ User.findAllUsersAddresses = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", "result": result });
+          res.send({ status: "success", result: result });
         }
       }
     }
