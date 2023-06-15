@@ -5,7 +5,7 @@ const User = require('../controllers/user.controller.js');
 const checkToken = require('../tokenChecker.js');
 
 
-router.get('/getUsers', checkToken(["is_technical_department", "is_administator", "is_sales_department"]), User.findAll);
+router.get('/getUsers', checkToken(["is_technical_department", "is_administrator", "is_sales_department"]), User.findAll);
 router.get('/getUser/:id', User.findOne);
 router.post('/createUser', User.create);
 router.put('/updateUser/:id', User.update);

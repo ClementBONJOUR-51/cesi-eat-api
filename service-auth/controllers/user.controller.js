@@ -1,34 +1,64 @@
 const database = require("../connexion_mysql"); // importation de la connexion à la base de données
 const con = database.getConnection();
-const express = require('express');
+const express = require("express");
 const app = express();
-const User = require('../models/user.model.js');
+const User = require("../models/user.model.js");
 app.use(express.json());
-const jwt = require('jsonwebtoken');
-const config = require('../config');
+const jwt = require("jsonwebtoken");
+const config = require("../config");
 
 User.findAll = (req, res) => {
-    con.query('SELECT * FROM cesi.Users WHERE date_out IS NULL', (err, result) => {
+  con.query(
+    "SELECT * FROM cesi.Users WHERE date_out IS NULL",
+    (err, result) => {
       if (err) {
-        res.send('error', err);
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
         // console.log(err);
       } else {
-        const totalCount = result.length; // Nombre total de résultats
-        res.setHeader('X-Total-Count', totalCount); // Définition de l'en-tête "X-Total-Count"
-        res.send(result);
-      }
-    });
-  };
-
-User.findOne = (req, res) => { // Pour afficher un utilisateur
-    con.query('SELECT * FROM `cesi`.`Users` WHERE id = ? AND date_out IS NULL', req.params.id, (err, result) => {
-        if (err){
-            res.send('error', err);
-            // console.log(err);
-        }else{
-            res.send(result);
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "L'utilisateur est introuvable ",
+          });
+        } else {
+          const totalCount = result.length; // Nombre total de résultats
+          res.setHeader("X-Total-Count", totalCount); // Définition de l'en-tête "X-Total-Count"
+          res.send({ status: "success", result: result });
         }
-});
+      }
+    }
+  );
+};
+
+User.findOne = (req, res) => {
+  // Pour afficher un utilisateur
+  con.query(
+    "SELECT * FROM `cesi`.`Users` WHERE id = ? AND date_out IS NULL",
+    req.params.id,
+    (err, result) => {
+      if (err) {
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
+        // console.log(err);
+      } else {
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "L'utilisateur est introuvable ",
+          });
+        } else {
+          res.send({ status: "success", result: result });
+        }
+      }
+    }
+  );
 };
 
 // User.create = (req, res) => { // créer un utilisateur
@@ -46,127 +76,239 @@ User.findOne = (req, res) => { // Pour afficher un utilisateur
 
 // Créer adresse et l'utilisateur en retournant l'id de la table adresse nouvellement créée dans la table utilisateur
 User.create = (req, res) => {
-    const addressData = {
-      postal_code: req.body.postal_code,
-      street: req.body.street,
-      city: req.body.city,
-      street_number: req.body.street_number,
-      lati: req.body.lati,
-      longi: req.body.longi
-    };
-  
-    // Insérer l'adresse dans la table `adresse`
-    con.query("INSERT INTO Address SET ?", addressData, (err, addressResult) => {
-      if (err) {
-        // console.log("Address", err);
-        res.send('error', err);
-      } else {
-        const addressId = addressResult.insertId;
-  
-        const userData = {
-          firstname: req.body.firstname,
-          lastname: req.body.lastname,
-          gender: req.body.gender,
-          birthday: req.body.birthday,
-          email: req.body.email,
-          password: req.body.password,
-          token: req.body.token,
-          phone: req.body.phone,
-          email_sponsor: req.body.email_sponsor,
-          id_role: req.body.id_role,
-          id_address: addressId
-        };
-  
-        // Insérer l'utilisateur dans la table `users` avec l'ID de l'adresse
-        con.query("INSERT INTO Users SET ?", userData, (err, userResult) => {
-          if (err) {
-            // console.log("Users", err);
-            res.send('error', err);
-          } else {
-            res.send(userResult);
-          }
-        });
-      }
-    });
+  const addressData = {
+    postal_code: req.body.postal_code,
+    street: req.body.street,
+    city: req.body.city,
+    street_number: req.body.street_number,
+    lati: req.body.lati,
+    longi: req.body.longi,
   };
 
+  // Insérer l'adresse dans la table `adresse`
+  con.query("INSERT INTO Address SET ?", addressData, (err, addressResult) => {
+    if (err) {
+      // console.log("Address", err);
+      res.send({
+        status: "error",
+        message: "Les données sont incorrectes !",
+        error: err,
+      });
+    } else {
+      const addressId = addressResult.insertId;
 
+      const userData = {
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        gender: req.body.gender,
+        birthday: req.body.birthday,
+        email: req.body.email,
+        password: req.body.password,
+        token: req.body.token,
+        phone: req.body.phone,
+        email_sponsor: req.body.email_sponsor,
+        id_role: req.body.id_role,
+        id_address: addressId,
+      };
 
-User.update = (req, res) => { // modifier un utilisateur
-    const data = [req.body.firstname, req.body.lastname, req.body.gender, req.body.birthday, req.body.email, req.body.password, req.body.token, req.body.phone, req.body.email_sponsor, req.body.id_role, req.body.id_address, req.params.id]
-    con.query('UPDATE `cesi`.`Users` SET `firstname`=?, `lastname`=?, `gender`=?, `birthday`=?, `email`=?, `password`=?, `token`=?, `phone`=?, `email_sponsor`=?, `id_role`=?, `id_address`=? WHERE `id`=?', data, (err, result) => {
-        if (err){
-            res.send('error', err);
-            // console.log(err);
+      // Insérer l'utilisateur dans la table `users` avec l'ID de l'adresse
+      con.query("INSERT INTO Users SET ?", userData, (err, userResult) => {
+        if (err) {
+          res.send({
+            status: "error",
+            message: "Les données sont incorrectes !",
+            error: err,
+          });
+          // console.log(err);
+        } else {
+          if (result.length == 0) {
+            res.send({
+              status: "error",
+              message: "L'utilisateur n'a pas pu être ajouté ! ",
+            });
+          } else {
+            res.send({ status: "success", result: result });
+          }
         }
-        else{
-            res.send(result);
-            // console.log(result);
-        }
+      });
     }
-    );
+  });
 };
 
-User.delete = (req, res) => { // supprimer un utilisateur avec date_in date_out.
-    con.query('UPDATE `cesi`.`Users` SET `date_out`= NOW() WHERE `id`=?', req.params.id, (err, result) => {
-        if (err){
-            res.send('error', err);
-            // console.log(err);
-            throw err; // arrête le programme
+User.update = (req, res) => {
+  // modifier un utilisateur
+  const data = [
+    req.body.firstname,
+    req.body.lastname,
+    req.body.gender,
+    req.body.birthday,
+    req.body.email,
+    req.body.password,
+    req.body.token,
+    req.body.phone,
+    req.body.email_sponsor,
+    req.body.id_role,
+    req.body.id_address,
+    req.params.id,
+  ];
+  con.query(
+    "UPDATE `cesi`.`Users` SET `firstname`=?, `lastname`=?, `gender`=?, `birthday`=?, `email`=?, `password`=?, `token`=?, `phone`=?, `email_sponsor`=?, `id_role`=?, `id_address`=? WHERE `id`=?",
+    data,
+    (err, result) => {
+      if (err) {
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
+        // console.log(err);
+      } else {
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "Le compte utilisateur est introuvable ",
+          });
+        } else {
+          res.send({ status: "success", result: result });
         }
-        else{
-            res.send(result);
-            // console.log(result);
-        }
+      }
     }
-    );
+  );
+};
+
+User.delete = (req, res) => {
+  // supprimer un utilisateur avec date_in date_out.
+  con.query(
+    "UPDATE `cesi`.`Users` SET `date_out`= NOW() WHERE `id`=?",
+    req.params.id,
+    (err, result) => {
+      if (err) {
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
+        // console.log(err);
+      } else {
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "Le compte utilisateur est introuvable ! ",
+          });
+        } else {
+          res.send({ status: "success", result: result });
+        }
+      }
+    }
+  );
 };
 
 //Utilisateur et son rôle dans sa table
-User.findRoleUser = (req, res) => { // Pour afficher un utilisateur
-    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Roles` ON Users.id_role = Roles.id WHERE Users.id = ? AND Users.date_out IS NULL', req.params.id, (err, result) => {
-        if (err){
-            res.send('error', err);
-            // console.log(err);
-        }else{
-            res.send(result);
+User.findRoleUser = (req, res) => {
+  // Pour afficher un utilisateur
+  con.query(
+    "SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Roles` ON Users.id_role = Roles.id WHERE Users.id = ? AND Users.date_out IS NULL",
+    req.params.id,
+    (err, result) => {
+      if (err) {
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
+        // console.log(err);
+      } else {
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "L'utilisateur n'a pas été trouvé ! ",
+          });
+        } else {
+          res.send({ status: "success", result: result });
         }
-});
+      }
+    }
+  );
 };
 
 //Utilisateurs et tous les rôles dans sa table
-User.findAllRolesUsers = (req, res) => { // Pour afficher des utilisateurs et leurs rôles
-    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Roles` ON Users.id_role = Roles.id WHERE Users.date_out IS NULL', (err, result) => {
-        if (err){
-            res.send('error', err);
-            // console.log(err);
-        }else{
-            res.send(result);
+User.findAllRolesUsers = (req, res) => {
+  // Pour afficher des utilisateurs et leurs rôles
+  con.query(
+    "SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Roles` ON Users.id_role = Roles.id WHERE Users.date_out IS NULL",
+    (err, result) => {
+      if (err) {
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
+        // console.log(err);
+      } else {
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "L'utilisateur n'a pas été trouvé ! ",
+          });
+        } else {
+          res.send({ status: "success", result: result });
         }
-});
+      }
+    }
+  );
 };
 
-User.findUserAddress = (req, res) => { // Pour afficher l'adresse d'un utilisateur
-    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = Users.id_address WHERE Users.id = ? AND Users.date_out IS NULL', req.params.id, (err, result) => {
-        if (err){
-            res.send('error', err);
-            // console.log(err);
-        }else{
-            res.send(result);
+User.findUserAddress = (req, res) => {
+  // Pour afficher l'adresse d'un utilisateur
+  con.query(
+    "SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = Users.id_address WHERE Users.id = ? AND Users.date_out IS NULL",
+    req.params.id,
+    (err, result) => {
+      if (err) {
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
+        // console.log(err);
+      } else {
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "L'utilisateur n'a pas été trouvé ! ",
+          });
+        } else {
+          res.send({ status: "success", result: result });
         }
-});
+      }
+    }
+  );
 };
 
-User.findAllUsersAddresses = (req, res) => { // Pour afficher les adresses des utilisateurs
-    con.query('SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = Users.id_address WHERE Users.date_out IS NULL', (err, result) => {
-        if (err){
-            res.send('error', err);
-            // console.log(err);
-        }else{
-            res.send(result);
+User.findAllUsersAddresses = (req, res) => {
+  // Pour afficher les adresses des utilisateurs
+  con.query(
+    "SELECT * FROM `cesi`.`Users` INNER JOIN `cesi`.`Address` ON Address.id = Users.id_address WHERE Users.date_out IS NULL",
+    (err, result) => {
+      if (err) {
+        res.send({
+          status: "error",
+          message: "Les données sont incorrectes !",
+          error: err,
+        });
+        // console.log(err);
+      } else {
+        if (result.length == 0) {
+          res.send({
+            status: "error",
+            message: "L'utilisateur n'a pas été trouvé ! ",
+          });
+        } else {
+          res.send({ status: "success", result: result });
         }
-});
+      }
+    }
+  );
 };
 
 module.exports = User;
-    
