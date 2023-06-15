@@ -20,7 +20,7 @@ Role.findAll = (req, res) => {
         if (result.length == 0) {
           res.send({
             status: "error",
-            message: "Le rôle utilisateur n'a pas été trouvé ! ",
+            message: "Les rôles utilisateurs n'ont pas été trouvés ! ",
           });
         } else {
           const totalCount = result.length; // Nombre total de résultats

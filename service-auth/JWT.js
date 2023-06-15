@@ -2,10 +2,10 @@ const express = require("express");
 const database = require("./connexion_mysql"); // importation de la connexion à la base de données
 const con = database.getConnection();
 // const bodyParser = require('body-parser')
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("./controllers/user.controller.js");
-const config = require('./config');
+const config = require("./config");
 
 router.get("/", (req, res) => {
   res.send("Ok");
@@ -26,24 +26,24 @@ router.post("/login", (req, res) => {
           res.status(401).json({
             error: "Invalid email or password",
           });
-        } 
-        const user = {
-            id: result[0].id,
-            firstname: result[0].firstname,
-            lastname: result[0].lastname,
-            role : result[0].id_role,
-            email: result[0].email,
-            phone : result[0].phone,
-            birthday : result[0].birthday,
-            gender : result[0].gender,
-            is_customer : result[0].customer,
-            is_delivery_person : result[0].delivery_person,
-            is_restorant : result[0].restorant,
-            is_administrator : result[0].administrator,
-            is_sales_department : result[0].sales_department,
-            is_technical_department : result[0].technical_department,
-            is_developer_tier : result[0].developer_tier,
         }
+        const user = {
+          id: result[0].id,
+          firstname: result[0].firstname,
+          lastname: result[0].lastname,
+          role: result[0].id_role,
+          email: result[0].email,
+          phone: result[0].phone,
+          birthday: result[0].birthday,
+          gender: result[0].gender,
+          is_customer: result[0].customer,
+          is_delivery_person: result[0].delivery_person,
+          is_restorant: result[0].restorant,
+          is_administrator: result[0].administrator,
+          is_sales_department: result[0].sales_department,
+          is_technical_department: result[0].technical_department,
+          is_developer_tier: result[0].developer_tier,
+        };
         const token = jwt.sign(user, config.secret, {
           expiresIn: config.tokenLife,
         });

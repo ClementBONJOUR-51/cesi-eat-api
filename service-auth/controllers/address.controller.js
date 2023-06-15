@@ -73,7 +73,7 @@ Address.create = (req, res) => {
       if (result.length == 0) {
         res.send({
           status: "error",
-          message: "L'adresse n'a pas pu être créée ! ",
+          message: "L'adresse n'a pas pu être ajoutée ! ",
         });
       } else {
         res.send({ status: "success", result: result });

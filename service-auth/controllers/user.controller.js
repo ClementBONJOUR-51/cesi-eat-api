@@ -22,7 +22,7 @@ User.findAll = (req, res) => {
         if (result.length == 0) {
           res.send({
             status: "error",
-            message: "L'utilisateur est introuvable ",
+            message: "Les utilisateurs sont introuvables !",
           });
         } else {
           const totalCount = result.length; // Nombre total de résultats
@@ -51,7 +51,7 @@ User.findOne = (req, res) => {
         if (result.length == 0) {
           res.send({
             status: "error",
-            message: "L'utilisateur est introuvable ",
+            message: "L'utilisateur est introuvable !",
           });
         } else {
           res.send({ status: "success", result: result });
@@ -124,7 +124,7 @@ User.create = (req, res) => {
           if (result.length == 0) {
             res.send({
               status: "error",
-              message: "L'utilisateur n'a pas pu être ajouté ! ",
+              message: "L'utilisateur n'a pas pu être ajouté !",
             });
           } else {
             res.send({ status: "success", result: result });
@@ -166,7 +166,7 @@ User.update = (req, res) => {
         if (result.length == 0) {
           res.send({
             status: "error",
-            message: "Le compte utilisateur est introuvable ",
+            message: "Le compte utilisateur est introuvable !",
           });
         } else {
           res.send({ status: "success", result: result });
@@ -193,7 +193,7 @@ User.delete = (req, res) => {
         if (result.length == 0) {
           res.send({
             status: "error",
-            message: "Le compte utilisateur est introuvable ! ",
+            message: "Le compte utilisateur est introuvable !",
           });
         } else {
           res.send({ status: "success", result: result });
