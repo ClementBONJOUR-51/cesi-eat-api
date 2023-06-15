@@ -27,7 +27,7 @@ User.findAll = (req, res) => {
         } else {
           const totalCount = result.length; // Nombre total de résultats
           res.setHeader("X-Total-Count", totalCount); // Définition de l'en-tête "X-Total-Count"
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -54,7 +54,7 @@ User.findOne = (req, res) => {
             message: "L'utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result[0] });
         }
       }
     }
@@ -97,38 +97,63 @@ User.create = (req, res) => {
     } else {
       const addressId = addressResult.insertId;
 
-      const userData = {
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        gender: req.body.gender,
-        birthday: req.body.birthday,
-        email: req.body.email,
-        password: req.body.password,
-        token: req.body.token,
-        phone: req.body.phone,
-        email_sponsor: req.body.email_sponsor,
-        id_role: req.body.id_role,
-        id_address: addressId,
+      // créer role
+      const roleData = {
+        customer: req.body.customer,
+        delivery_person: req.body.delivery_person,
+        restorant: req.body.restorant,
+        administrator: req.body.administrator,
+        sales_department: req.body.sales_department,
+        technical_department: req.body.technical_department,
+        developer_tier: req.body.developer_tier,
       };
 
-      // Insérer l'utilisateur dans la table `users` avec l'ID de l'adresse
-      con.query("INSERT INTO Users SET ?", userData, (err, userResult) => {
+      // Insérer le role dans la table users avec ID Role
+      // Table role
+      con.query("INSERT INTO Roles SET ?", roleData, (err, roleResult) => {
         if (err) {
           res.send({
             status: "error",
             message: "Les données sont incorrectes !",
             error: err,
           });
-          // console.log(err);
         } else {
-          if (result.length == 0) {
-            res.send({
-              status: "error",
-              message: "L'utilisateur n'a pas pu être ajouté !",
-            });
-          } else {
-            res.send({ status: "success", result: result });
-          }
+          const roleId = roleResult.insertId;
+
+          const userData = {
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            gender: req.body.gender,
+            birthday: req.body.birthday,
+            email: req.body.email,
+            password: req.body.password,
+            token: req.body.token,
+            phone: req.body.phone,
+            email_sponsor: req.body.email_sponsor,
+            id_role: roleId,
+            id_address: addressId,
+          };
+
+          // Insérer l'utilisateur dans la table `users` avec l'ID de l'adresse
+          con.query("INSERT INTO Users SET ?", userData, (err, userResult) => {
+            if (err) {
+              res.send({
+                status: "error",
+                message: "Les données sont incorrectes !",
+                error: err,
+              });
+              // console.log(err);
+            } else {
+              if (result.length == 0) {
+                res.send({
+                  status: "error",
+                  message: "L'utilisateur n'a pas pu être ajouté !",
+                });
+              } else {
+                res.send({ status: "success", "result": result });
+              }
+            } // else
+          });
         }
       });
     }
@@ -169,7 +194,7 @@ User.update = (req, res) => {
             message: "Le compte utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -177,7 +202,7 @@ User.update = (req, res) => {
 };
 
 User.delete = (req, res) => {
-  // supprimer un utilisateur avec date_in date_out.
+  // supprimer un utilisateur avec date_in date_out et prendre en compte aussi le role et l'address
   con.query(
     "UPDATE `cesi`.`Users` SET `date_out`= NOW() WHERE `id`=?",
     req.params.id,
@@ -196,7 +221,7 @@ User.delete = (req, res) => {
             message: "Le compte utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -224,7 +249,7 @@ User.findRoleUser = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -251,7 +276,7 @@ User.findAllRolesUsers = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -278,7 +303,7 @@ User.findUserAddress = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -304,7 +329,7 @@ User.findAllUsersAddresses = (req, res) => {
             message: "L'utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }

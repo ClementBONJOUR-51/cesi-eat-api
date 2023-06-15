@@ -25,7 +25,7 @@ Role.findAll = (req, res) => {
         } else {
           const totalCount = result.length; // Nombre total de résultats
           res.setHeader("X-Total-Count", totalCount); // Définition de l'en-tête "X-Total-Count"
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -52,7 +52,7 @@ Role.findOne = (req, res) => {
             message: "Le rôle utilisateur n'a pas été trouvé ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -76,7 +76,7 @@ Role.create = (req, res) => {
           message: "Le rôle utilisateur n'a pas pu être créé ! ",
         });
       } else {
-        res.send({ status: "success", result: result });
+        res.send({ status: "success", "result": result });
       }
     }
   });
@@ -112,7 +112,7 @@ Role.update = (req, res) => {
             message: "Le rôle utilisateur n'a pas pu être mis à jour ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
@@ -139,7 +139,7 @@ Role.delete = (req, res) => {
             message: "Le rôle utilisateur est introuvable ! ",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", "result": result });
         }
       }
     }
