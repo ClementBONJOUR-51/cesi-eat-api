@@ -6,9 +6,9 @@ const { ObjectId } = mongoose.Types;
 // Toutes les commandes avec date_in et date_out
 const getAllOrders = async (req, res) => {
   try {
-    const order = await Order.find({ date_out: null });
+    const orders = await Order.find({ date_out: null }).populate("restorant").populate("products");
     const count = await Order.countDocuments({ date_out: null });
-    res.status(200).json({ result: { order, count }, status: "success" });
+    res.status(200).json({ result: { orders, count }, status: "success" });
   } catch (error) {
     res
       .status(500)
@@ -26,7 +26,7 @@ const getOneOrder = async (req, res) => {
     const order = await Order.findOne({
       _id: req.params.id,
       date_out: null,
-    });
+    }).populate("restorant").populate("products");
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
     res
@@ -41,9 +41,13 @@ const getOneOrder = async (req, res) => {
 
 //create Order
 const createOrder = async (req, res) => {
+  // générer un numéro de facture de 5 caractères avec chiffres et lettres et en majuscule
+  const invoice_number = Math.random().toString(36).substr(2, 5).toUpperCase();
+  console.log(invoice_number);
+  // récupérer les id des produits
   const productIds = req.body.products.map((product) => product.id_product);
   const OrderObj = new Order({
-    id_restorant: req.body.id_restorant,
+    restorant: req.body.restorant,
     // id_customer : req.body.id_customer,
     // id_delivery_person : req.body.id_delivery_person,
     order_state: req.body.order_state,
@@ -60,7 +64,6 @@ const createOrder = async (req, res) => {
       email: req.body.customer.email,
     },
     address: {
-      id_address: req.body.address.id_address,
       street: req.body.address.street,
       postal_code: req.body.address.postal_code,
       city: req.body.address.city,
@@ -73,11 +76,11 @@ const createOrder = async (req, res) => {
       firstname: req.body.delivery_person.firstname,
       lastname: req.body.delivery_person.lastname,
     },
-    invoice_number: req.body.invoice_number,
+    invoice_number: invoice_number,
     discount: req.body.discount,
   });
   try {
-    const newOrder = await OrderObj.save();
+    const newOrder = await OrderObj.save(); 
     res.status(200).json({ result: newOrder, status: "success" });
   } catch (error) {
     res
@@ -95,7 +98,7 @@ const updateOrder = async (req, res) => {
   try {
     const productIds = req.body.products.map((product) => product.id_product);
     const order = await Order.findById(req.params.id);
-    (order.id_restorant = req.body.id_restorant),
+    (order.restorant = req.body.restorant),
       // order.id_customer = req.body.id_customer,
       // order.id_delivery_person = req.body.id_delivery_person,
       (order.order_state = req.body.order_state),
@@ -112,7 +115,6 @@ const updateOrder = async (req, res) => {
         email: req.body.customer.email,
       }),
       (order.address = {
-        id_address: req.body.address.id_address,
         street: req.body.address.street,
         postal_code: req.body.address.postal_code,
         city: req.body.address.city,
@@ -198,7 +200,7 @@ const getOneOrderWithProducts = async (req, res) => {
 const getOrdersWithRestorants = async (req, res) => {
   try {
     const orders = await Order.find({ date_out: null }).populate(
-      "id_restorant"
+      "restorant"
     );
     const count = await Order.countDocuments({ date_out: null });
     res.status(200).json({ result: { orders, count }, status: "success" });
@@ -219,7 +221,7 @@ const getOneOrderWithRestorant = async (req, res) => {
     const order = await Order.findOne({
       _id: req.params.id,
       date_out: null,
-    }).populate("id_restorant");
+    }).populate("restorant");
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
     res

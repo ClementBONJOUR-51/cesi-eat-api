@@ -29,16 +29,17 @@ module.exports = (allowedRoles, checkid) => {
         allowedRoles.forEach((role) => {
           if (decoded[role] === 1) {
             nextok = true; 
-            if (req.params.id ) { 
-              if (decoded.id === parseInt(req.params.id)) {
-                next();
-              }
-              else{
-                return res
-                .status(403)
-                .json({ error: true, message: "Unauthorized access." });
-              }
-            } else
+            // if (req.params.id ) { 
+            //   if (decoded.id === parseInt(req.params.id)) {
+            //     next();
+            //   }
+            //   else{
+            //     return res
+            //     .status(403)
+            //     .json({ error: true, message: "Unauthorized access." });
+            //   }
+            // } 
+            // else
               next();
             }
             // Si paramètre id dans l'url alors on vérifie que l'utilisateur est bien le propriétaire de la ressource

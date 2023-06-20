@@ -6,9 +6,9 @@ const { ObjectId } = mongoose.Types;
 // Tous les Restorants avec date_in et date_out
 const getAllRestorants = async (req, res) => {
   try {
-    const restorant = await Restorant.find({ date_out: null });
+    const restorants = await Restorant.find({ date_out: null });
     const count = await Restorant.countDocuments({ date_out: null });
-    res.status(200).json({ result: { restorant, count }, status: "success" });
+    res.status(200).json({ result: { restorants, count }, status: "success" });
   } catch (error) {
     res
       .status(500)

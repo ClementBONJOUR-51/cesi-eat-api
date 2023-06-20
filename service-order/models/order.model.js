@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
-    id_restorant : {
+    restorant : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Restorant'
       },
@@ -24,7 +24,6 @@ const schema = new mongoose.Schema({
         email : String,
     },
     address : {
-        id_address : Number,
         street : String,
         postal_code : String,
         city : String,
