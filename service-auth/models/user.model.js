@@ -10,7 +10,7 @@ const User = function(user) {
     this.phone = user.phone;
     this.date_in = user.date_in;
     this.date_out = user.date_out;
-    this.id_sponsor = user.id_sponsor;
+    this.email_sponsor = user.email_sponsor;
     this.id_role = user.id_role;
     this.id_address = user.id_address;
 };

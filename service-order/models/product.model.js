@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
-    id_restorant : {
+    restorant : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Restorant'
       },
