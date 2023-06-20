@@ -6,17 +6,17 @@ const { ObjectId } = mongoose.Types;
 // Toutes les commandes avec date_in et date_out
 const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ date_out: null }).populate("restorant").populate("products");
+    const orders = await Order.find({ date_out: null })
+      .populate("restorant")
+      .populate("products");
     const count = await Order.countDocuments({ date_out: null });
     res.status(200).json({ result: { orders, count }, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Les commandes n'ont pas été trouvées",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Les commandes n'ont pas été trouvées",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -26,16 +26,16 @@ const getOneOrder = async (req, res) => {
     const order = await Order.findOne({
       _id: req.params.id,
       date_out: null,
-    }).populate("restorant").populate("products");
+    })
+      .populate("restorant")
+      .populate("products");
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande n'a pas été trouvée",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande n'a pas été trouvée",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -44,12 +44,14 @@ const createOrder = async (req, res) => {
   // générer un numéro de facture de 5 caractères avec chiffres et lettres et en majuscule
   const invoice_number = Math.random().toString(36).substr(2, 5).toUpperCase();
   const deliveryPerson = req.body.delivery_person
-  ? {
-      id_delivery_person: req.body.delivery_person.id_delivery_person,
-      firstname: req.body.delivery_person.firstname,
-      lastname: req.body.delivery_person.lastname,
-    }
-  : null;
+    ? {
+        id_delivery_person: req.body.delivery_person.id_delivery_person,
+        firstname: req.body.delivery_person.firstname,
+        lastname: req.body.delivery_person.lastname,
+        phone_delivery: req.body.delivery_person.phone_delivery,
+        email: req.body.delivery_person.email,
+      }
+    : null;
   console.log(invoice_number);
   // récupérer les id des produits
   const productIds = req.body.products.map((product) => product.id_product);
@@ -81,20 +83,16 @@ const createOrder = async (req, res) => {
     delivery_person: deliveryPerson,
     invoice_number: invoice_number,
     discount: req.body.discount,
-    phone_delivery: req.body.delivery_person.phone,
-    email: req.body.delivery_person.email,
   });
   try {
-    const newOrder = await OrderObj.save(); 
+    const newOrder = await OrderObj.save();
     res.status(200).json({ result: newOrder, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande n'a pas pu être créée",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande n'a pas pu être créée",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -103,6 +101,22 @@ const updateOrder = async (req, res) => {
   try {
     const productIds = req.body.products.map((product) => product.id_product);
     const order = await Order.findById(req.params.id);
+    // Si je n'ai pas de delivery_person mais qu'il existe déjà dans la BDD je le laisse sinon s'il n'existe pas je met null
+    let deliveryPerson = null; // Initialiser avec null par défaut
+
+    if (req.body.delivery_person) {
+      // Si req.body contient un delivery_person
+      deliveryPerson = {
+        id_delivery_person: req.body.delivery_person.id_delivery_person,
+        firstname: req.body.delivery_person.firstname,
+        lastname: req.body.delivery_person.lastname,
+        phone_delivery: req.body.delivery_person.phone_delivery,
+        email: req.body.delivery_person.email,
+      };
+    } else if (order.delivery_person) {
+      // Si delivery_person existe déjà dans la base de données
+      deliveryPerson = order.delivery_person; // Conserver la valeur existante
+    }
     (order.restorant = req.body.restorant),
       // order.id_customer = req.body.id_customer,
       // order.id_delivery_person = req.body.id_delivery_person,
@@ -127,25 +141,17 @@ const updateOrder = async (req, res) => {
         lati: req.body.address.lati,
         longi: req.body.address.longi,
       }),
-      (order.delivery_person = {
-        id_delivery_person: req.body.delivery_person.id_delivery_person,
-        firstname: req.body.delivery_person.firstname,
-        lastname: req.body.delivery_person.lastname,
-        phone_delivery: req.body.delivery_person.phone_delivery,
-        email: req.body.delivery_person.email,
-      }),
+      (order.delivery_person = deliveryPerson),
       (order.invoice_number = req.body.invoice_number),
       (order.discount = req.body.discount),
       await order.save();
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande est introuvable !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande est introuvable !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -157,13 +163,11 @@ const deleteOrder = async (req, res) => {
     await order.save();
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande est introuvable !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande est introuvable !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -174,13 +178,11 @@ const getOrdersWithProducts = async (req, res) => {
     const count = await Order.countDocuments({ date_out: null });
     res.status(200).json({ result: { orders, count }, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Les commandes et les produits sont introuvables !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Les commandes et les produits sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -193,32 +195,26 @@ const getOneOrderWithProducts = async (req, res) => {
     }).populate("products");
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande et les produits sont introuvables !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande et les produits sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
 // getOrdersWithRestorant
 const getOrdersWithRestorants = async (req, res) => {
   try {
-    const orders = await Order.find({ date_out: null }).populate(
-      "restorant"
-    );
+    const orders = await Order.find({ date_out: null }).populate("restorant");
     const count = await Order.countDocuments({ date_out: null });
     res.status(200).json({ result: { orders, count }, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande est introuvable !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande est introuvable !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -231,13 +227,11 @@ const getOneOrderWithRestorant = async (req, res) => {
     }).populate("restorant");
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande est introuvable !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande est introuvable !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
@@ -255,16 +249,13 @@ const assignDeliveryPersonToOrder = async (req, res) => {
     await order.save();
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "La commande est introuvable !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "La commande est introuvable !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
-
 
 module.exports = {
   getAllOrders,
