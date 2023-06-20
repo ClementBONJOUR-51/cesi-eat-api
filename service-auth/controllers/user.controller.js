@@ -8,6 +8,7 @@ const jwt = require("jsonwebtoken");
 const config = require("../config");
 
 User.findAll = (req, res) => {
+<<<<<<< HEAD
   const { role } = req.params;
 
   let query = " SELECT * FROM cesi.Users INNER JOIN cesi.Roles ON Users.id_role = Roles.id WHERE Users.date_out IS NULL ";
@@ -19,6 +20,10 @@ User.findAll = (req, res) => {
   console.log(query);
   con.query(
     query,
+=======
+  con.query(
+    "SELECT * FROM cesi.Users WHERE date_out IS NULL",
+>>>>>>> cb2b5f9c97bad6d2cc14e6b058daaac2d124e055
     (err, result) => {
       if (err) {
         res.send({
