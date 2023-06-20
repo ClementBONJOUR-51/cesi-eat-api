@@ -35,7 +35,7 @@ const schema = new mongoose.Schema({
         id_delivery_person: Number,
         firstname : String,
         lastname : String,
-        phone: String,
+        phone_delivery: String,
         email: String,
     },
     order_date : { type: Date, default: Date.now },

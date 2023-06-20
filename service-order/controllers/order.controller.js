@@ -81,7 +81,7 @@ const createOrder = async (req, res) => {
     delivery_person: deliveryPerson,
     invoice_number: invoice_number,
     discount: req.body.discount,
-    phone: req.body.delivery_person.phone,
+    phone_delivery: req.body.delivery_person.phone,
     email: req.body.delivery_person.email,
   });
   try {
@@ -131,7 +131,7 @@ const updateOrder = async (req, res) => {
         id_delivery_person: req.body.delivery_person.id_delivery_person,
         firstname: req.body.delivery_person.firstname,
         lastname: req.body.delivery_person.lastname,
-        phone: req.body.delivery_person.phone,
+        phone_delivery: req.body.delivery_person.phone_delivery,
         email: req.body.delivery_person.email,
       }),
       (order.invoice_number = req.body.invoice_number),
@@ -249,7 +249,7 @@ const assignDeliveryPersonToOrder = async (req, res) => {
       id_delivery_person: req.body.delivery_person.id_delivery_person,
       firstname: req.body.delivery_person.firstname,
       lastname: req.body.delivery_person.lastname,
-      phone: req.body.delivery_person.phone,
+      phone_delivery: req.body.delivery_person.phone_delivery,
       email: req.body.delivery_person.email,
     };
     await order.save();

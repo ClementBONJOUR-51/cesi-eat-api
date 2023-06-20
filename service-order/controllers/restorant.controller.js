@@ -50,7 +50,6 @@ const createRestorant = async (req, res) => {
             lastname : req.body.restorer.restorer_name,
             firstname : req.body.restorer.restorer_firstname,
             email : req.body.restorer.restorer_email,
-            password : req.body.restorer.restorer_password,
             phone : req.body.restorer.restorer_phone,
         },
         address:{
@@ -65,7 +64,7 @@ const createRestorant = async (req, res) => {
     try {
         const newRestorant = await RestorantObj.save();
         // console.log(newRestorant);
-        res.status(201).json(newRestorant);
+        res.status(201).json({"result": newRestorant, "status": "success"});
     }
     catch (error) {
         res.status(400).json({ message: error.message });
@@ -95,7 +94,7 @@ const updateRestorant = async (req, res) => {
             street_number : req.body.address.street_number,
         },
         await restorant.save();
-        res.status(200).json(restorant);
+        res.status(200).json({"result": restorant, "status": "success"});
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
