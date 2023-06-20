@@ -81,6 +81,8 @@ const createOrder = async (req, res) => {
     delivery_person: deliveryPerson,
     invoice_number: invoice_number,
     discount: req.body.discount,
+    phone: req.body.delivery_person.phone,
+    email: req.body.delivery_person.email,
   });
   try {
     const newOrder = await OrderObj.save(); 
@@ -129,6 +131,8 @@ const updateOrder = async (req, res) => {
         id_delivery_person: req.body.delivery_person.id_delivery_person,
         firstname: req.body.delivery_person.firstname,
         lastname: req.body.delivery_person.lastname,
+        phone: req.body.delivery_person.phone,
+        email: req.body.delivery_person.email,
       }),
       (order.invoice_number = req.body.invoice_number),
       (order.discount = req.body.discount),
@@ -237,6 +241,31 @@ const getOneOrderWithRestorant = async (req, res) => {
   }
 };
 
+// Assigner un livreur à une commande
+const assignDeliveryPersonToOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    order.delivery_person = {
+      id_delivery_person: req.body.delivery_person.id_delivery_person,
+      firstname: req.body.delivery_person.firstname,
+      lastname: req.body.delivery_person.lastname,
+      phone: req.body.delivery_person.phone,
+      email: req.body.delivery_person.email,
+    };
+    await order.save();
+    res.status(200).json({ result: order, status: "success" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "La commande est introuvable !",
+        status: "error",
+        error: error.message,
+      });
+  }
+};
+
+
 module.exports = {
   getAllOrders,
   getOneOrder,
@@ -247,4 +276,5 @@ module.exports = {
   getOneOrderWithProducts,
   getOrdersWithRestorants,
   getOneOrderWithRestorant,
+  assignDeliveryPersonToOrder,
 };

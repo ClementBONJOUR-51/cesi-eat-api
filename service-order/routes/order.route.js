@@ -1,6 +1,6 @@
 const express = require('express');
 const port = 3000;
-const { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder, getOrdersWithProducts, getOneOrderWithProducts, getOrdersWithRestorants, getOneOrderWithRestorant } = require('../controllers/order.controller.js');
+const { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder, getOrdersWithProducts, getOneOrderWithProducts, getOrdersWithRestorants, getOneOrderWithRestorant, assignDeliveryPersonToOrder } = require('../controllers/order.controller.js');
 const router = express.Router();
 
 router.get('/getAllOrders', async (req, res) => getAllOrders(req, res));
@@ -12,5 +12,6 @@ router.get('/getOrdersWithProducts', async (req, res) => getOrdersWithProducts(r
 router.get('/getOneOrderWithProducts/:id', async (req, res) => getOneOrderWithProducts(req, res));
 router.get('/getOrdersWithRestorants', async (req, res) => getOrdersWithRestorants(req, res));
 router.get('/getOneOrderWithRestorant/:id', async (req, res) => getOneOrderWithRestorant(req, res));
+router.put('/assignDeliveryPersonToOrder/:id', async (req, res) => assignDeliveryPersonToOrder(req, res));
 
 module.exports = router;

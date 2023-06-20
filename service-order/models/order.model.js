@@ -35,6 +35,8 @@ const schema = new mongoose.Schema({
         id_delivery_person: Number,
         firstname : String,
         lastname : String,
+        phone: String,
+        email: String,
     },
     order_date : { type: Date, default: Date.now },
     order_delivery_date : { type: Date, default: null },
