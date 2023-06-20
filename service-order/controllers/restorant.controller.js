@@ -50,7 +50,6 @@ const createRestorant = async (req, res) => {
             lastname : req.body.restorer.restorer_name,
             firstname : req.body.restorer.restorer_firstname,
             email : req.body.restorer.restorer_email,
-            password : req.body.restorer.restorer_password,
             phone : req.body.restorer.restorer_phone,
         },
         address:{
@@ -65,7 +64,7 @@ const createRestorant = async (req, res) => {
     try {
         const newRestorant = await RestorantObj.save();
         // console.log(newRestorant);
-        res.status(201).json(newRestorant);
+        res.status(201).json({"result": newRestorant, "status": "success"});
     }
     catch (error) {
         res.status(400).json({ message: error.message });
@@ -79,8 +78,23 @@ const updateRestorant = async (req, res) => {
         restorant.restorant_name = req.body.restorant_name,
         restorant.restorant_type = req.body.restorant_type,
         restorant.phone_number = req.body.phone_number,
+        restorant.restorer = {
+            id_user : req.body.restorer.id_restorer,
+            lastname : req.body.restorer.restorer_name,
+            firstname : req.body.restorer.restorer_firstname,
+            email : req.body.restorer.restorer_email,
+            phone : req.body.restorer.restorer_phone,
+        },
+        restorant.address = {
+            street : req.body.address.street,
+            postal_code : req.body.address.postal_code,
+            city : req.body.address.city,
+            lati : req.body.address.lati,
+            longi : req.body.address.longi,
+            street_number : req.body.address.street_number,
+        },
         await restorant.save();
-        res.status(200).json(restorant);
+        res.status(200).json({"result": restorant, "status": "success"});
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
