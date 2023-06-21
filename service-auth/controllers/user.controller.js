@@ -10,7 +10,7 @@ const config = require("../config");
 User.findAll = (req, res) => {
   const { role } = req.params;
 
-  let query = " SELECT * FROM cesi.Users INNER JOIN cesi.Roles ON Users.id_role = Roles.id WHERE Users.date_out IS NULL ";
+  let query = " SELECT * FROM cesi.Users INNER JOIN cesi.Roles ON Users.id_role = Roles.id INNER JOIN cesi.Address ON Users.id_address = Address.id WHERE Users.date_out IS NULL ";
 
   // Vérifie si le paramètre role est spécifié
   if (role && role != "all") {

@@ -46,11 +46,11 @@ const createRestorant = async (req, res) => {
         restorant_type : req.body.restorant_type,
         phone_number : req.body.phone_number,
         restorer : {
-            id_user : req.body.restorer.id_restorer,
-            lastname : req.body.restorer.restorer_name,
-            firstname : req.body.restorer.restorer_firstname,
-            email : req.body.restorer.restorer_email,
-            phone : req.body.restorer.restorer_phone,
+            id_user : req.body.restorer.id_user,
+            lastname : req.body.restorer.lastname,
+            firstname : req.body.restorer.firstname,
+            email : req.body.restorer.email,
+            phone : req.body.restorer.phone,
         },
         address:{
             street : req.body.address.street,
@@ -79,11 +79,11 @@ const updateRestorant = async (req, res) => {
         restorant.restorant_type = req.body.restorant_type,
         restorant.phone_number = req.body.phone_number,
         restorant.restorer = {
-            id_user : req.body.restorer.id_restorer,
-            lastname : req.body.restorer.restorer_name,
-            firstname : req.body.restorer.restorer_firstname,
-            email : req.body.restorer.restorer_email,
-            phone : req.body.restorer.restorer_phone,
+            id_user : req.body.restorer.id_user,
+            lastname : req.body.restorer.lastname,
+            firstname : req.body.restorer.firstname,
+            email : req.body.restorer.email,
+            phone : req.body.restorer.phone,
         },
         restorant.address = {
             street : req.body.address.street,
