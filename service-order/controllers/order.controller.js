@@ -257,6 +257,65 @@ const assignDeliveryPersonToOrder = async (req, res) => {
   }
 };
 
+// commande avec date_out non null avec restorant et produits avec sélection de l'id du client
+const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      // date_out exist
+      date_out: { $ne: null },
+      "customer.id_customer": req.params.id,
+    })
+      .populate("products")
+      .populate("restorant");
+    const count = await Order.countDocuments({
+      date_out: { $ne: null },
+      "customer.id_customer": req.params.id,
+    });
+    res.status(200).json({ result: { orders, count }, status: "success" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Les commandes et les produits sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
+const getRestorantByRestorerId = async (req, res) => {
+  try {
+    const restorant = await Restorant.findOne({
+      "restorer.id_user": req.params.id,
+      date_out: null,
+    });
+    res.status(200).json({ result: restorant, status: "success" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Le restorant/restorateur est introuvable !",
+        status: "error",
+        error: error.message,
+      });
+  }
+};
+
+// const getOrdersWithProductsAndRestorants = async (req, res) => {
+//   try {
+//     const orders = await Order.find({ date_out: { $ne: null } })
+//       .populate("products")
+//       .populate("restorant")
+//       .populate("customer");
+//     const count = await Order.countDocuments({ date_out: { $ne: null } });
+//     res.status(200).json({ result: { orders, count }, status: "success" });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Les commandes sont introuvables !",
+//       status: "error",
+//       error: error.message,
+//     });
+//   }
+// };
+
 module.exports = {
   getAllOrders,
   getOneOrder,
@@ -268,4 +327,5 @@ module.exports = {
   getOrdersWithRestorants,
   getOneOrderWithRestorant,
   assignDeliveryPersonToOrder,
+  getOrdersWithProductsAndRestorantsByCustomerId,
 };
