@@ -3,6 +3,7 @@ const con = require('./connexion_mongoDB');
 const routerOrder = require('./routes/order.route');
 const routerProduct = require('./routes/product.route');
 const routerRestorant = require('./routes/restorant.route');
+const routerMenu = require('./routes/menu.route');
 const os = require("os");
 const cors = require("cors");
 
@@ -17,6 +18,7 @@ var cpuUsage = null;
 app.use(routerOrder);
 app.use(routerProduct);
 app.use(routerRestorant);
+app.use(routerMenu);
 app.get("/getCPU", (req, res) => {
     res.send({ cpu: cpuUsage });
 });
