@@ -63,7 +63,7 @@ User.findOne = (req, res) => {
             message: "L'utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result });
+          res.send({ status: "success", result: result[0] });
         }
       }
     }
