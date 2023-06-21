@@ -118,10 +118,31 @@ const deleteRestorant = async (req, res) => {
   }
 }
 
+// récupérer le restorant grâce à l'id du restorer
+const getRestorantByRestorerId = async (req, res) => {
+  try {
+    const restorant = await Restorant.findOne({
+      "restorer.id_user": req.params.id,
+      date_out: null,
+    });
+    res.status(200).json({ result: restorant, status: "success" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Le restorant/restorateur est introuvable !",
+        status: "error",
+        error: error.message,
+      });
+  }
+};
+
+
 module.exports = {
   getAllRestorants,
   getOneRestorant,
   createRestorant,
   updateRestorant,
   deleteRestorant,
+  getRestorantByRestorerId,
 };
