@@ -3,10 +3,12 @@ const mongoose = require("mongoose");
 const Product = require("../models/product.model.js");
 const { ObjectId } = mongoose.Types;
 
-// Tous les produits avec date_in et date_out
+// Tous les produits avec date_in et date_out + populate sur restorant
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({ date_out: null });
+    const products = await Product.find({ date_out: null }).populate(
+      "restorant"
+    );
     const count = await Product.countDocuments({ date_out: null });
     res.status(200).json({ result: { products, count }, status: "success" });
   } catch (error) {
@@ -20,6 +22,7 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+
 //get one Product avec date_in et date_out
 const getOneProduct = async (req, res) => {
   try {
@@ -27,7 +30,9 @@ const getOneProduct = async (req, res) => {
     const product = await Product.findOne({
       _id: req.params.id,
       date_out: null,
-    });
+    }).populate(
+      "restorant"
+    );
     res.status(200).json({ result: product, status: "success" });
   } catch (error) {
     res
