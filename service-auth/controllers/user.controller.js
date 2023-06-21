@@ -46,7 +46,7 @@ User.findAll = (req, res) => {
 User.findOne = (req, res) => {
   // Pour afficher un utilisateur
   con.query(
-    "SELECT * FROM `cesi`.`Users` WHERE id = ? AND date_out IS NULL",
+    "SELECT * FROM cesi.Users INNER JOIN cesi.Roles ON Users.id_role = Roles.id INNER JOIN cesi.Address ON Users.id_address = Address.id WHERE Users.date_out IS NULL",
     req.params.id,
     (err, result) => {
       if (err) {

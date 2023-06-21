@@ -100,16 +100,16 @@ const updateProduct = async (req, res) => {
 
 //delete Product (just change date_out)
 const deleteProduct = async (req, res) => {
-  const authorized = ["is_administrator"];
+  // const authorized = ["is_administrator"];
   try {
     const product = await Product.findById(req.params.id);
-    product.date_out = Date.now();
-    if(product.restorant == req.decoded.id || authorized.includes(req.decoded.role)){
+    // if(product.restorant == req.decoded.id || authorized.includes(req.decoded.role)){
+      product.date_out = Date.now();
       await product.save();
-      res.status(200).json({ result: product, status: "success" });
-    }else{
-      res.status(500).json({ message: "Vous n'avez pas l'autorisation de supprimer ce produit !", status: "error" });
-    }
+    // }else{
+    //   res.status(500).json({ message: "Vous n'avez pas l'autorisation de supprimer ce produit !", status: "error" });
+    // }
+    res.status(200).json({ result: product, status: "success" });
   } catch (error) {
     res
       .status(500)
