@@ -69,34 +69,29 @@ const createProduct = async (req, res) => {
 
 //update Product
 const updateProduct = async (req, res) => {
-  const authorized = ["is_administrator"];
   try {
     const product = await Product.findById(req.params.id);
+    // if(product.restorant == req.decoded.id || authorized.includes(req.decoded.role)){
+      product.restorant = req.body.restorant;
       product.product_name = req.body.product_name;
       product.product_price = req.body.product_price;
       product.product_category = req.body.product_category;
-      // si prop ou admin
-      // console.log('decoded', req.decoded.role);
-      // console.log('restorant', product.restorant);
-      // if(product.restorant == req.decoded.id || authorized.includes(req.decoded.role)){ 
-        
-        // autorisé à changer le role administrateur en le reconnaissant par son id ou si on reconnait l'id restaurant mais pour qu'un seul restorant
-      // if(product.restorant == req.body.restorant || authorized.includes(req.decoded.role)){ 
-      //   await product.save();
-      // }else{
-      //   res.status(500).json({ message: "Vous n'avez pas l'autorisation de changer ce produit !", status: "error" });
-      // }
+      await product.save();
+    // }else{
+    //   res.status(500).json({ message: "Vous n'avez pas l'autorisation de modifier ce produit !", status: "error" });
+    // }
     res.status(200).json({ result: product, status: "success" });
   } catch (error) {
     res
       .status(500)
       .json({
-        message: "Le produit n'a pas pu être mis à jour !",
+        message: "Le produit n'a pas pu être modifié !",
         status: "error",
         error: error.message,
       });
   }
 };
+
 
 //delete Product (just change date_out)
 const deleteProduct = async (req, res) => {
