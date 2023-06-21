@@ -281,40 +281,47 @@ const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   }
 };
 
-const getRestorantByRestorerId = async (req, res) => {
+// Lister les order n'ayant pas d'id delivery_person
+const getOrdersWithoutDeliveryPerson = async (req, res) => {
   try {
-    const restorant = await Restorant.findOne({
-      "restorer.id_user": req.params.id,
+    const orders = await Order.find({
       date_out: null,
+      delivery_person: { $exists: false },
     });
-    res.status(200).json({ result: restorant, status: "success" });
+    const count = await Order.countDocuments({
+      date_out: null,
+      delivery_person: { $exists: false },
+    });
+    res.status(200).json({ result: { orders, count }, status: "success" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Le restorant/restorateur est introuvable !",
-        status: "error",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Les commandes sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
   }
 };
 
-// const getOrdersWithProductsAndRestorants = async (req, res) => {
-//   try {
-//     const orders = await Order.find({ date_out: { $ne: null } })
-//       .populate("products")
-//       .populate("restorant")
-//       .populate("customer");
-//     const count = await Order.countDocuments({ date_out: { $ne: null } });
-//     res.status(200).json({ result: { orders, count }, status: "success" });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Les commandes sont introuvables !",
-//       status: "error",
-//       error: error.message,
-//     });
-//   }
-// };
+// Avoir toutes les commandes d'un restorant + populate restorant
+const getOrdersByRestorantId = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      "restorant": req.params.id,
+      date_out: null,
+    }).populate("restorant");
+    const count = await Order.countDocuments({
+      "restorant": req.params.id,
+      date_out: null,
+    });
+    res.status(200).json({ result: { orders, count }, status: "success" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Les commandes sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   getAllOrders,
@@ -328,4 +335,6 @@ module.exports = {
   getOneOrderWithRestorant,
   assignDeliveryPersonToOrder,
   getOrdersWithProductsAndRestorantsByCustomerId,
+  getOrdersWithoutDeliveryPerson,
+  getOrdersByRestorantId,
 };

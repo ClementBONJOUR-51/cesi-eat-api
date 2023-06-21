@@ -123,10 +123,39 @@ const deleteMenu = async (req, res) => {
   }
 };
 
+// Tous les menus d'un restorant avec populate
+const getAllMenusByRestorant = async (req, res) => {
+  try {
+    const menus = await Menu.find({ restorant: req.params.id, date_out: null })
+      .populate("restorant")
+      .populate("menu_starters")
+      .populate("menu_dishes")
+      .populate("menu_desserts")
+      .populate("menu_beverages");
+    const count = await Menu.countDocuments({
+      restorant: req.params.id,
+      date_out: null,
+    });
+    res.status(200).json({ result: { menus, count }, status: "success" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Les menus sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
 module.exports = {
   getAllMenus,
   getOneMenu,
   createMenu,
   updateMenu,
   deleteMenu,
+  getAllMenusByRestorant,
 };
