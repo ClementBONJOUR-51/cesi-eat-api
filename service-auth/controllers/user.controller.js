@@ -44,10 +44,10 @@ User.findAll = (req, res) => {
 };
 
 User.findOne = (req, res) => {
-  // Pour afficher un utilisateur
+  // Pour afficher un utilisateur avec son addresse et role par son id
   con.query(
-    "SELECT * FROM cesi.Users INNER JOIN cesi.Roles ON Users.id_role = Roles.id INNER JOIN cesi.Address ON Users.id_address = Address.id WHERE Users.date_out IS NULL",
-    req.params.id,
+    "SELECT * FROM cesi.Users INNER JOIN cesi.Roles ON Users.id_role = Roles.id INNER JOIN cesi.Address ON Users.id_address = Address.id WHERE Users.id = ? AND Users.date_out IS NULL",
+    [req.params.id],
     (err, result) => {
       if (err) {
         res.send({
@@ -63,13 +63,12 @@ User.findOne = (req, res) => {
             message: "L'utilisateur est introuvable !",
           });
         } else {
-          res.send({ status: "success", result: result[0] });
+          res.send({ status: "success", result: result });
         }
       }
     }
   );
 };
-
 // Créer adresse et l'utilisateur en retournant l'id de la table adresse nouvellement créée dans la table utilisateur
 User.create = (req, res) => {
   const addressData = {
