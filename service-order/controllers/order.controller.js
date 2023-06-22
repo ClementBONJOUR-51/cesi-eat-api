@@ -235,19 +235,50 @@ const getOneOrderWithRestorant = async (req, res) => {
   }
 };
 
-// Assigner un livreur à une commande
+// Assigner un livreur à une commande vérifier si delivery_person existe déjà dans la base de données
+// const assignDeliveryPersonToOrder = async (req, res) => {
+//   try {
+//     const order = await Order.findById(req.params.id);
+//     order.delivery_person = {
+//       id_delivery_person: req.body.delivery_person.id_delivery_person,
+//       firstname: req.body.delivery_person.firstname,
+//       lastname: req.body.delivery_person.lastname,
+//       phone_delivery: req.body.delivery_person.phone_delivery,
+//       email: req.body.delivery_person.email,
+//     };
+//     await order.save();
+//     res.status(200).json({ result: order, status: "success" });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "La commande est introuvable !",
+//       status: "error",
+//       error: error.message,
+//     });
+//   }
+// };
+// Assigner un livreur à une commande vérifier si delivery_person existe déjà dans la base de données
 const assignDeliveryPersonToOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
-    order.delivery_person = {
-      id_delivery_person: req.body.delivery_person.id_delivery_person,
-      firstname: req.body.delivery_person.firstname,
-      lastname: req.body.delivery_person.lastname,
-      phone_delivery: req.body.delivery_person.phone_delivery,
-      email: req.body.delivery_person.email,
-    };
-    await order.save();
-    res.status(200).json({ result: order, status: "success" });
+    // console.log(typeof(order.delivery_person));
+    if (!order.delivery_person.id_delivery_person) {
+      
+    // console.log('ajout', order.delivery_person.id_delivery_person);
+      order.delivery_person = {
+        id_delivery_person: req.body.delivery_person.id_delivery_person,
+        firstname: req.body.delivery_person.firstname,
+        lastname: req.body.delivery_person.lastname,
+        phone_delivery: req.body.delivery_person.phone_delivery,
+        email: req.body.delivery_person.email,
+      };
+      await order.save();
+      res.status(200).json({ result: order, status: "success" });
+    } else {
+      res.status(200).json({
+        message: "La commande a déjà un livreur !",
+        status: "error",
+      });
+    }
   } catch (error) {
     res.status(500).json({
       message: "La commande est introuvable !",
@@ -256,6 +287,8 @@ const assignDeliveryPersonToOrder = async (req, res) => {
     });
   }
 };
+
+
 
 // commande avec date_out non null avec restorant et produits avec sélection de l'id du client
 const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
@@ -281,13 +314,33 @@ const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   }
 };
 
-// Lister les order n'ayant pas d'id delivery_person
+// Lister les order n'ayant pas d'id delivery_person en affichant toutes les informations du resto
+// const getOrdersWithoutDeliveryPerson = async (req, res) => {
+//   try {
+//     const orders = await Order.find({
+//       date_out: null,
+//       delivery_person: { $exists: false },
+//     });
+//     const count = await Order.countDocuments({
+//       date_out: null,
+//       delivery_person: { $exists: false },
+//     });
+//     res.status(200).json({ result: { orders, count }, status: "success" });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Les commandes sont introuvables !",
+//       status: "error",
+//       error: error.message,
+//     });
+//   }
+// };
+// Lister les order n'ayant pas d'id delivery_person en affichant toutes les informations du resto par populate
 const getOrdersWithoutDeliveryPerson = async (req, res) => {
   try {
     const orders = await Order.find({
       date_out: null,
       delivery_person: { $exists: false },
-    });
+    }).populate("restorant");
     const count = await Order.countDocuments({
       date_out: null,
       delivery_person: { $exists: false },
@@ -301,6 +354,8 @@ const getOrdersWithoutDeliveryPerson = async (req, res) => {
     });
   }
 };
+
+
 
 // Avoir toutes les commandes d'un restorant + populate restorant
 const getOrdersByRestorantId = async (req, res) => {
