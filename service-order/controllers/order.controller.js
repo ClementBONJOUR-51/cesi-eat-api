@@ -262,6 +262,7 @@ const assignDeliveryPersonToOrder = async (req, res) => {
     const order = await Order.findById(req.params.id);
     // console.log(typeof(order.delivery_person));
     if (!order.delivery_person.id_delivery_person) {
+      order.order_state = "En cours de livraison";
       
     // console.log('ajout', order.delivery_person.id_delivery_person);
       order.delivery_person = {
