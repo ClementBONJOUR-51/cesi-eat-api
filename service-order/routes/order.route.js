@@ -16,7 +16,6 @@ router.put('/assignDeliveryPersonToOrder/:id', async (req, res) => assignDeliver
 router.get('/getOrdersWithProductsAndRestorantsByCustomerId/:id', async (req, res) => getOrdersWithProductsAndRestorantsByCustomerId(req, res));
 router.get('/getOrdersWithoutDeliveryPerson', async (req, res) => getOrdersWithoutDeliveryPerson(req, res));
 router.get('/getOrdersByRestorantId/:id', async (req, res) => getOrdersByRestorantId(req, res));
-router.get('/getOrdersWithProductsAndRestorantsByCustomerId/:id', async (req, res) => getOrdersWithProductsAndRestorantsByCustomerId(req, res));
 router.get('/getOneOrderByCustomerId/:id', async (req, res) => getOneOrderByCustomerId(req, res));
 
 module.exports = router;

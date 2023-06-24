@@ -416,6 +416,5 @@ module.exports = {
   getOrdersWithProductsAndRestorantsByCustomerId,
   getOrdersWithoutDeliveryPerson,
   getOrdersByRestorantId,
-  getOrdersWithProductsAndRestorantsByCustomerId,
   getOneOrderByCustomerId,
 };
