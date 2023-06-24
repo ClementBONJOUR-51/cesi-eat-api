@@ -403,6 +403,27 @@ const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   }
 };
 
+// Afficher la commande d'un client avec les produits et le restorant associé à la commande avec date_out null
+const getOneOrderByCustomerId = async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      date_out: null,
+      "customer.id_customer": req.params.id,
+    })
+      .populate("products")
+      .populate("restorant");
+    res.status(200).json({ result: order, status: "success" });
+  } catch (error) {
+    res.status(500).json({
+      message: "La commande est introuvable !",
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
+
 
 
 module.exports = {
@@ -420,4 +441,5 @@ module.exports = {
   getOrdersWithoutDeliveryPerson,
   getOrdersByRestorantId,
   getOrdersWithProductsAndRestorantsByCustomerId,
+  getOneOrderByCustomerId,
 };
