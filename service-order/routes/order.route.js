@@ -1,6 +1,6 @@
 const express = require('express');
 const port = 3000;
-const { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder, getOrdersWithProducts, getOneOrderWithProducts, getOrdersWithRestorants, getOneOrderWithRestorant, assignDeliveryPersonToOrder, getOrdersWithProductsAndRestorantsByCustomerId, getOrdersWithoutDeliveryPerson, getOrdersByRestorantId, getOrdersWithProductsAndRestorantsByCustomerId, getOneOrderByCustomerId } = require('../controllers/order.controller.js');
+const { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder, getOrdersWithProducts, getOneOrderWithProducts, getOrdersWithRestorants, getOneOrderWithRestorant, assignDeliveryPersonToOrder, getOrdersWithProductsAndRestorantsByCustomerId, getOrdersWithoutDeliveryPerson, getOrdersByRestorantId, getOneOrderByCustomerId } = require('../controllers/order.controller.js');
 const router = express.Router();
 
 router.get('/getAllOrders', async (req, res) => getAllOrders(req, res));
