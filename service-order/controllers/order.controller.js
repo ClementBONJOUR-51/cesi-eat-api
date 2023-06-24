@@ -383,7 +383,6 @@ const getOrdersByRestorantId = async (req, res) => {
 const getOneOrderByCustomerId = async (req, res) => {
   try {
     const order = await Order.findOne({
-      _id: req.params.id,
       date_out: null,
       "customer.id_customer": req.params.id,
     })
@@ -398,9 +397,6 @@ const getOneOrderByCustomerId = async (req, res) => {
     });
   }
 };
-
-
-
 
 module.exports = {
   getAllOrders,
