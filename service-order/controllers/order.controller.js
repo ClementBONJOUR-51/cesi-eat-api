@@ -291,7 +291,7 @@ const assignDeliveryPersonToOrder = async (req, res) => {
 
 
 
-// commande avec date_out non null avec restorant et produits avec sélection de l'id du client
+// Historique des commandes d'un client
 const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   try {
     const orders = await Order.find({
@@ -373,30 +373,6 @@ const getOrdersByRestorantId = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Les commandes sont introuvables !",
-      status: "error",
-      error: error.message,
-    });
-  }
-};
-
-//Historique des commandes d'un client
-const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
-  try {
-    const orders = await Order.find({
-      // date_out exist
-      date_out: { $ne: null },
-      "customer.id_customer": req.params.id,
-    })
-      .populate("products")
-      .populate("restorant");
-    const count = await Order.countDocuments({
-      date_out: { $ne: null },
-      "customer.id_customer": req.params.id,
-    });
-    res.status(200).json({ result: { orders, count }, status: "success" });
-  } catch (error) {
-    res.status(500).json({
-      message: "Les commandes et les produits sont introuvables !",
       status: "error",
       error: error.message,
     });
