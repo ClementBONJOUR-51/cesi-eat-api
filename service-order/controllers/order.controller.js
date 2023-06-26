@@ -1,6 +1,7 @@
 //like post controller but for Order
 const mongoose = require("mongoose");
 const Order = require("../models/order.model.js");
+const moment = require("moment");
 const { ObjectId } = mongoose.Types;
 
 // Toutes les commandes avec date_in et date_out
@@ -125,7 +126,7 @@ const updateOrder = async (req, res) => {
       // order.id_address = req.body.id_address,
       (order.products = productIds),
       (order.customer = {
-        id_cutosmer: req.body.customer.id_customer,
+        id_customer: req.body.customer.id_customer,
         firstname: req.body.customer.firstname,
         lastname: req.body.customer.lastname,
         gender: req.body.customer.gender,
@@ -262,7 +263,7 @@ const assignDeliveryPersonToOrder = async (req, res) => {
     const order = await Order.findById(req.params.id);
     // console.log(typeof(order.delivery_person));
     if (!order.delivery_person.id_delivery_person) {
-      order.order_state = "En cours de livraison";
+      order.order_state = "TAKEN";
       
     // console.log('ajout', order.delivery_person.id_delivery_person);
       order.delivery_person = {
@@ -291,18 +292,43 @@ const assignDeliveryPersonToOrder = async (req, res) => {
 
 
 
-// Historique des commandes d'un client avec l'état order_state = "livrée" date_out = null
+// // Historique des commandes d'un client en vérifiant que c'est bien order_state = DELIVERED et date_out = null
+// const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
+//   try {
+//     const orders = await Order.find({
+//       customer: req.params.id,
+//       order_state: "DELIVERED",
+//       date_out: null,
+//     })
+//       .populate("products")
+//       .populate("restorant");
+//     const count = await Order.countDocuments({
+//       customer: req.params.id,
+//       order_state: "DELIVERED",
+//       date_out: null,
+//     });
+//     res.status(200).json({ result: { orders, count }, status: "success" });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Les commandes sont introuvables !",
+//       status: "error",
+//       error: error.message,
+//     });
+//   }
+// };
+
+// Historique des commandes d'un client en vérifiant que c'est bien order_state = DELIVERED et date_out = null
 const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   try {
     const orders = await Order.find({
-      customer: req.params.id,
+      "customer.id_customer": req.params.id,
       order_state: "DELIVERED",
       date_out: null,
     })
       .populate("products")
       .populate("restorant");
     const count = await Order.countDocuments({
-      customer: req.params.id,
+      "customer.id_customer": req.params.id,
       order_state: "DELIVERED",
       date_out: null,
     });
@@ -316,28 +342,6 @@ const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   }
 };
 
-
-
-// Lister les order n'ayant pas d'id delivery_person en affichant toutes les informations du resto
-// const getOrdersWithoutDeliveryPerson = async (req, res) => {
-//   try {
-//     const orders = await Order.find({
-//       date_out: null,
-//       delivery_person: { $exists: false },
-//     });
-//     const count = await Order.countDocuments({
-//       date_out: null,
-//       delivery_person: { $exists: false },
-//     });
-//     res.status(200).json({ result: { orders, count }, status: "success" });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Les commandes sont introuvables !",
-//       status: "error",
-//       error: error.message,
-//     });
-//   }
-// };
 // Lister les order n'ayant pas d'id delivery_person en affichant toutes les informations du resto par populate
 const getOrdersWithoutDeliveryPerson = async (req, res) => {
   try {
@@ -401,6 +405,65 @@ const getOneOrderByCustomerId = async (req, res) => {
   }
 };
 
+// afficher les dernières commandes passer durant le mois d'un restorant, avec le nombre de commandes par mois sur 1 an, les 10 produits les plus commandés en tout
+const getStatisticRestaurant = async (req, res) => {
+  const thirtyDaysAgo = moment().subtract(30, 'days').startOf('day').toDate();
+  const oneYearAgo = moment().subtract(1, 'year').startOf('month').toDate();
+
+  try {
+      const ordersLast30Days = await Order.find({
+          restorant: req.params.id,
+          date_in: { $gte: thirtyDaysAgo }
+      });
+      const ordersLast30DaysResult = {};
+      ordersLast30Days.forEach(order => {
+          const day = moment(order.date_in).format('DD/MM');
+          if (!ordersLast30DaysResult[day]) ordersLast30DaysResult[day] = 0;
+          ordersLast30DaysResult[day]++;
+      });
+
+      const ordersLastYear = await Order.find({
+          restorant: req.params.id,
+          date_in: { $gte: oneYearAgo }
+      });
+      const ordersLastYearResult = {};
+      ordersLastYear.forEach(order => {
+          const month = moment(order.date_in).format('MM/YYYY');
+          if (!ordersLastYearResult[month]) ordersLastYearResult[month] = 0;
+          ordersLastYearResult[month]++;
+      });
+
+      const allOrders = await Order.find({ restorant: req.params.id }).populate('products');
+      const productCounts = {};
+      allOrders.forEach(order => {
+          order.products.forEach(product => {
+              if (!productCounts[product.product_name]) productCounts[product.product_name] = 0;
+              productCounts[product.product_name]++;
+          });
+      });
+      const mostUsedProducts = Object.entries(productCounts)
+          .sort(([,a],[,b]) => b-a)
+          .slice(0, 10)
+          .map(([product, count], index) => ({ rank: index + 1, product, count }));
+
+      res.status(200).json({
+          status: "success",
+          result: {
+              ordersLast30Days: Object.entries(ordersLast30DaysResult).map(([day, count]) => ({ day, count })),
+              ordersByMonth: Object.entries(ordersLastYearResult).map(([month, count]) => ({ month, count })),
+              mostUsedProducts,
+          }
+      });
+
+  } catch (error) {
+      res.status(500).json({
+          message: "Erreur lors de la récupération des statistiques du restaurant.",
+          status: "error",
+          error: error.message,
+      });
+  }
+};
+
 module.exports = {
   getAllOrders,
   getOneOrder,
@@ -416,4 +479,5 @@ module.exports = {
   getOrdersWithoutDeliveryPerson,
   getOrdersByRestorantId,
   getOneOrderByCustomerId,
+  getStatisticRestaurant,
 };
