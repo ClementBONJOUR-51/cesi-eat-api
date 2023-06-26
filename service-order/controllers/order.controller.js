@@ -291,29 +291,32 @@ const assignDeliveryPersonToOrder = async (req, res) => {
 
 
 
-// Historique des commandes d'un client
+// Historique des commandes d'un client avec l'état order_state = "livrée" date_out = null
 const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   try {
     const orders = await Order.find({
-      // date_out exist
-      date_out: { $ne: null },
-      "customer.id_customer": req.params.id,
+      customer: req.params.id,
+      order_state: "livrée",
+      date_out: null,
     })
       .populate("products")
       .populate("restorant");
     const count = await Order.countDocuments({
-      date_out: { $ne: null },
-      "customer.id_customer": req.params.id,
+      customer: req.params.id,
+      order_state: "livrée",
+      date_out: null,
     });
     res.status(200).json({ result: { orders, count }, status: "success" });
   } catch (error) {
     res.status(500).json({
-      message: "Les commandes et les produits sont introuvables !",
+      message: "Les commandes sont introuvables !",
       status: "error",
       error: error.message,
     });
   }
 };
+
+
 
 // Lister les order n'ayant pas d'id delivery_person en affichant toutes les informations du resto
 // const getOrdersWithoutDeliveryPerson = async (req, res) => {
