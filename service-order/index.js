@@ -4,6 +4,7 @@ const routerOrder = require('./routes/order.route');
 const routerProduct = require('./routes/product.route');
 const routerRestorant = require('./routes/restorant.route');
 const routerMenu = require('./routes/menu.route');
+const routerNotification = require('./routes/notification.route');
 const os = require("os");
 const cors = require("cors");
 
@@ -19,6 +20,7 @@ app.use(routerOrder);
 app.use(routerProduct);
 app.use(routerRestorant);
 app.use(routerMenu);
+app.use(routerNotification);
 app.get("/getCPU", (req, res) => {
     res.send({ cpu: cpuUsage });
 });

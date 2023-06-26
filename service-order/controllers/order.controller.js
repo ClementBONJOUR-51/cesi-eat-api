@@ -405,6 +405,29 @@ const getOneOrderByCustomerId = async (req, res) => {
   }
 };
 
+// afficher plusieurs commandes d'un client avec les produits et le restorant associé à la commande avec date_out null
+const getOrdersByCustomerId = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      date_out: null,
+      "customer.id_customer": req.params.id,
+    })
+      .populate("products")
+      .populate("restorant");
+    const count = await Order.countDocuments({
+      date_out: null,
+      "customer.id_customer": req.params.id,
+    });
+    res.status(200).json({ result: { orders, count }, status: "success" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Les commandes sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
 // afficher les dernières commandes passer durant le mois d'un restorant, avec le nombre de commandes par mois sur 1 an, les 10 produits les plus commandés en tout
 const getStatisticRestaurant = async (req, res) => {
   const thirtyDaysAgo = moment().subtract(30, 'days').startOf('day').toDate();
@@ -480,4 +503,5 @@ module.exports = {
   getOrdersByRestorantId,
   getOneOrderByCustomerId,
   getStatisticRestaurant,
+  getOrdersByCustomerId,
 };
