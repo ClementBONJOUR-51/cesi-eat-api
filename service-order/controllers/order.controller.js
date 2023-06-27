@@ -40,7 +40,7 @@ const getOneOrder = async (req, res) => {
   }
 };
 
-//create Order
+//create Order avec order_state = "CREATED"
 const createOrder = async (req, res) => {
   // générer un numéro de facture de 5 caractères avec chiffres et lettres et en majuscule
   const invoice_number = Math.random().toString(36).substr(2, 5).toUpperCase();
@@ -60,7 +60,7 @@ const createOrder = async (req, res) => {
     restorant: req.body.restorant,
     // id_customer : req.body.id_customer,
     // id_delivery_person : req.body.id_delivery_person,
-    order_state: req.body.order_state,
+    order_state: "CREATED",
     paid: req.body.paid,
     // id_address : req.body.id_address,
     products: productIds,
