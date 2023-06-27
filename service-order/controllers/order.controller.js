@@ -692,6 +692,30 @@ const getStatisticRestaurant = async (req, res) => {
   }
 };
 
+const getOrdersByDeliveryId = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      date_out: null,
+      "delivery_person.id_delivery_person": req.params.id,
+      order_state: "RACING",
+    })
+      .populate("products")
+      .populate("restorant");
+    const count = await Order.countDocuments({
+      date_out: null,
+      "delivery_person.id_delivery_person": req.params.id,
+      order_state: "RACING",
+    });
+    res.status(200).json({ result: { orders, count }, status: "success" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Les commandes sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllOrders,
   getOneOrder,
@@ -709,4 +733,5 @@ module.exports = {
   getOneOrderByCustomerId,
   getStatisticRestaurant,
   getOrdersByCustomerId,
+  getOrdersByDeliveryId,
 };
