@@ -1,6 +1,8 @@
 //like post controller but for Order
 const mongoose = require("mongoose");
 const Order = require("../models/order.model.js");
+const Notification = require("../models/notification.model.js");
+const Restorant = require("../models/restorant.model.js");
 const moment = require("moment");
 const { ObjectId } = mongoose.Types;
 
@@ -87,7 +89,22 @@ const createOrder = async (req, res) => {
   });
   try {
     const newOrder = await OrderObj.save();
-    res.status(200).json({ result: newOrder, status: "success" });
+    const notificationMessage = {
+      Titre: "Nouvelle commande",
+      message: "Une nouvelle commande a été créée avec le numéro de facture " + invoice_number,
+    };
+  
+    const newNotification = new Notification({
+      id_user: req.body.customer.id_customer,
+      type: "order",
+      message: JSON.stringify(notificationMessage),
+      read: false,
+    });
+  
+    // Enregistrez la nouvelle notification
+    const savedNotification = await newNotification.save();
+  
+    res.status(200).json({ result: newOrder, notification: savedNotification, status: "success" });
   } catch (error) {
     res.status(500).json({
       message: "La commande n'a pas pu être créée",
@@ -98,15 +115,74 @@ const createOrder = async (req, res) => {
 };
 
 //update Order
+// const updateOrder = async (req, res) => {
+//   try {
+//     const productIds = req.body.products.map((product) => product.id_product);
+//     const order = await Order.findById(req.params.id);
+//     // Si je n'ai pas de delivery_person mais qu'il existe déjà dans la BDD je le laisse sinon s'il n'existe pas je met null
+//     let deliveryPerson = null; // Initialiser avec null par défaut
+
+//     if (req.body.delivery_person) {
+//       // Si req.body contient un delivery_person
+//       deliveryPerson = {
+//         id_delivery_person: req.body.delivery_person.id_delivery_person,
+//         firstname: req.body.delivery_person.firstname,
+//         lastname: req.body.delivery_person.lastname,
+//         phone_delivery: req.body.delivery_person.phone_delivery,
+//         email: req.body.delivery_person.email,
+//       };
+//     } else if (order.delivery_person) {
+//       // Si delivery_person existe déjà dans la base de données
+//       deliveryPerson = order.delivery_person; // Conserver la valeur existante
+//     }
+//     (order.restorant = req.body.restorant),
+//       // order.id_customer = req.body.id_customer,
+//       // order.id_delivery_person = req.body.id_delivery_person,
+//       (order.order_state = req.body.order_state),
+//       (order.paid = req.body.paid),
+//       // order.id_address = req.body.id_address,
+//       (order.products = productIds),
+//       (order.customer = {
+//         id_customer: req.body.customer.id_customer,
+//         firstname: req.body.customer.firstname,
+//         lastname: req.body.customer.lastname,
+//         gender: req.body.customer.gender,
+//         birthday: req.body.customer.birthday,
+//         phone: req.body.customer.phone,
+//         email: req.body.customer.email,
+//       }),
+//       (order.address = {
+//         street: req.body.address.street,
+//         postal_code: req.body.address.postal_code,
+//         city: req.body.address.city,
+//         street_number: req.body.address.street_number,
+//         lati: req.body.address.lati,
+//         longi: req.body.address.longi,
+//       }),
+//       (order.delivery_person = deliveryPerson),
+//       (order.invoice_number = req.body.invoice_number),
+//       (order.discount = req.body.discount),
+//       await order.save();
+//     res.status(200).json({ result: order, status: "success" });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "La commande est introuvable !",
+//       status: "error",
+//       error: error.message,
+//     });
+//   }
+// };
+
+//update Order
 const updateOrder = async (req, res) => {
   try {
     const productIds = req.body.products.map((product) => product.id_product);
-    const order = await Order.findById(req.params.id);
-    // Si je n'ai pas de delivery_person mais qu'il existe déjà dans la BDD je le laisse sinon s'il n'existe pas je met null
-    let deliveryPerson = null; // Initialiser avec null par défaut
+    const order = await Order.findById(req.params.id).populate("restorant");
+    const restorant = await Restorant.findById(order.restorant);
+    console.log("restorant", restorant);
+    let deliveryPerson = null;
 
     if (req.body.delivery_person) {
-      // Si req.body contient un delivery_person
       deliveryPerson = {
         id_delivery_person: req.body.delivery_person.id_delivery_person,
         firstname: req.body.delivery_person.firstname,
@@ -115,37 +191,142 @@ const updateOrder = async (req, res) => {
         email: req.body.delivery_person.email,
       };
     } else if (order.delivery_person) {
-      // Si delivery_person existe déjà dans la base de données
-      deliveryPerson = order.delivery_person; // Conserver la valeur existante
+      deliveryPerson = order.delivery_person;
     }
-    (order.restorant = req.body.restorant),
-      // order.id_customer = req.body.id_customer,
-      // order.id_delivery_person = req.body.id_delivery_person,
-      (order.order_state = req.body.order_state),
-      (order.paid = req.body.paid),
-      // order.id_address = req.body.id_address,
-      (order.products = productIds),
-      (order.customer = {
-        id_customer: req.body.customer.id_customer,
-        firstname: req.body.customer.firstname,
-        lastname: req.body.customer.lastname,
-        gender: req.body.customer.gender,
-        birthday: req.body.customer.birthday,
-        phone: req.body.customer.phone,
-        email: req.body.customer.email,
-      }),
-      (order.address = {
-        street: req.body.address.street,
-        postal_code: req.body.address.postal_code,
-        city: req.body.address.city,
-        street_number: req.body.address.street_number,
-        lati: req.body.address.lati,
-        longi: req.body.address.longi,
-      }),
-      (order.delivery_person = deliveryPerson),
-      (order.invoice_number = req.body.invoice_number),
-      (order.discount = req.body.discount),
-      await order.save();
+
+    order.restorant = req.body.restorant;
+    order.order_state = req.body.order_state;
+    order.paid = req.body.paid;
+    order.products = productIds;
+    order.customer = {
+      id_customer: req.body.customer.id_customer,
+      firstname: req.body.customer.firstname,
+      lastname: req.body.customer.lastname,
+      gender: req.body.customer.gender,
+      birthday: req.body.customer.birthday,
+      phone: req.body.customer.phone,
+      email: req.body.customer.email,
+    };
+    order.address = {
+      street: req.body.address.street,
+      postal_code: req.body.address.postal_code,
+      city: req.body.address.city,
+      street_number: req.body.address.street_number,
+      lati: req.body.address.lati,
+      longi: req.body.address.longi,
+    };
+    order.delivery_person = deliveryPerson;
+     order.invoice_number = order.invoice_number;
+    order.discount = req.body.discount;
+    await order.save();
+
+    // Envoyer les notifications si l'état de la commande est "PREPARED"
+    if (order.order_state === "PREPARED") {
+      const customerNotificationMessage = {
+        Titre: "Commande en cours de préparation",
+        message: "Votre commande numéro " + order.invoice_number + " est en cours de préparation.",
+      };
+      const customerNotification = new Notification({
+        id_user: order.customer.id_customer,
+        type: "order",
+        message: JSON.stringify(customerNotificationMessage),
+        read: false,
+      });
+      await customerNotification.save();
+
+      const restorerNotificationMessage = {
+        Titre: "Commande prise en charge",
+        message: "Vous avez pris en charge la commande numéro " + order.invoice_number + ".",
+      };
+      const restorerNotification = new Notification({
+        id_user: restorant.restorer.id_user,
+        type: "order",
+        message: JSON.stringify(restorerNotificationMessage),
+        read: false,
+      });
+      await restorerNotification.save();
+    }
+
+    if (order.order_state === "RACING") {
+      const customerNotificationMessage = {
+        Titre: "Commande en cours de livraison",
+        message: "Votre commande numéro " + order.invoice_number + " est en en train d'arriver à votre adresse.",
+      };
+      const customerNotification = new Notification({
+        id_user: order.customer.id_customer,
+        type: "order",
+        message: JSON.stringify(customerNotificationMessage),
+        read: false,
+      });
+      await customerNotification.save();
+
+      const restorerNotificationMessage = {
+        Titre: "Commande envoyé au livreur",
+        message: "Le livreur à pris en charge la commande numéro " + order.invoice_number + ".",
+      };
+      const restorerNotification = new Notification({
+        id_user: restorant.restorer.id_user,
+        type: "order",
+        message: JSON.stringify(restorerNotificationMessage),
+        read: false,
+      });
+      await restorerNotification.save();
+
+      // Créer une notification pour le livreur
+      const deliveryPersonNotificationMessage = {
+        Titre: "Commande à livrer",
+        message: "Vous êtes en train de livrer la commande numéro " + order.invoice_number + ".",
+      };
+      const deliveryPersonNotification = new Notification({
+        id_user: order.delivery_person.id_delivery_person,
+        type: "order",
+        message: JSON.stringify(deliveryPersonNotificationMessage),
+        read: false,
+      });
+
+      await deliveryPersonNotification.save();
+    }
+
+    if (order.order_state === "DELIVERED") {
+      const customerNotificationMessage = {
+        Titre: "Commande livrée",
+        message: "Votre commande numéro " + order.invoice_number + " est arrivée à destination.",
+      };
+      const customerNotification = new Notification({
+        id_user: order.customer.id_customer,
+        type: "order",
+        message: JSON.stringify(customerNotificationMessage),
+        read: false,
+      });
+      await customerNotification.save();
+
+      const restorerNotificationMessage = {
+        Titre: "Commande livrée",
+        message: "Le livreur à livré la commande " + order.invoice_number + ".",
+      };
+      const restorerNotification = new Notification({
+        id_user: restorant.restorer.id_user,
+        type: "order",
+        message: JSON.stringify(restorerNotificationMessage),
+        read: false,
+      });
+      await restorerNotification.save();
+
+      // Créer une notification pour le livreur
+      const deliveryPersonNotificationMessage = {
+        Titre: "Commande livrée",
+        message: "Vous avez livré la commande numéro " + order.invoice_number + ".",
+      };
+      const deliveryPersonNotification = new Notification({
+        id_user: order.delivery_person.id_delivery_person,
+        type: "order",
+        message: JSON.stringify(deliveryPersonNotificationMessage),
+        read: false,
+      });
+      
+      await deliveryPersonNotification.save();
+    }
+
     res.status(200).json({ result: order, status: "success" });
   } catch (error) {
     res.status(500).json({
@@ -274,6 +455,31 @@ const assignDeliveryPersonToOrder = async (req, res) => {
         email: req.body.delivery_person.email,
       };
       await order.save();
+      const customerNotificationMessage = {
+        Titre: "Livreur attribué",
+        message: "Un livreur a été attribué à votre commande du numéro : " + order.invoice_number + ".",
+      };
+      const customerNotification = new Notification({
+        id_user: order.customer.id_customer,
+        type: "order",
+        message: JSON.stringify(customerNotificationMessage),
+        read: false,
+      });
+      await customerNotification.save();
+  
+      // Créer une notification pour le livreur
+      const deliveryPersonNotificationMessage = {
+        Titre: "Nouvelle commande",
+        message: "Vous avez été attribué pour prendre en charge une nouvelle commande. Celle du numéro : " + order.invoice_number + ".",
+      };
+      const deliveryPersonNotification = new Notification({
+        id_user: order.delivery_person.id_delivery_person,
+        type: "order",
+        message: JSON.stringify(deliveryPersonNotificationMessage),
+        read: false,
+      });
+      await deliveryPersonNotification.save();
+  
       res.status(200).json({ result: order, status: "success" });
     } else {
       res.status(200).json({
@@ -289,7 +495,6 @@ const assignDeliveryPersonToOrder = async (req, res) => {
     });
   }
 };
-
 
 
 // // Historique des commandes d'un client en vérifiant que c'est bien order_state = DELIVERED et date_out = null

@@ -1,6 +1,8 @@
 //like post controller but for Product
 const mongoose = require("mongoose");
 const Product = require("../models/product.model.js");
+const Restorant = require("../models/restorant.model.js");
+const Notification = require("../models/notification.model.js");
 const { ObjectId } = mongoose.Types;
 
 // Tous les produits avec date_in et date_out + populate sur restorant
@@ -54,8 +56,24 @@ const createProduct = async (req, res) => {
     product_category: req.body.product_category,
   });
   try {
+    const restorant = await Restorant.findById(ProductObj.restorant);
     const newProduct = await ProductObj.save();
-    res.status(200).json({ result: newProduct, status: "success" });
+    const notificationMessage = {
+      Titre: "Nouveau produit",
+      message: "Vous avez ajouté un nouveau produit " + req.body.product_name,
+    };
+  
+    const newNotification = new Notification({
+      id_user: restorant.restorer.id_user,
+      type: "order",
+      message: JSON.stringify(notificationMessage),
+      read: false,
+    });
+  
+    // Enregistrez la nouvelle notification
+    const savedNotification = await newNotification.save();
+  
+    res.status(200).json({ result: newProduct, notification: savedNotification, status: "success" });
   } catch (error) {
     res
       .status(500)
@@ -77,9 +95,23 @@ const updateProduct = async (req, res) => {
       product.product_price = req.body.product_price;
       product.product_category = req.body.product_category;
       await product.save();
-    // }else{
-    //   res.status(500).json({ message: "Vous n'avez pas l'autorisation de modifier ce produit !", status: "error" });
-    // }
+      const notificationMessage = {
+        Titre: "Modification du produit",
+        message: "Vous avez modifié un produit " + req.body.product_name,
+      };
+    
+      const restorant = await Restorant.findById(product.restorant);
+      const newNotification = new Notification({
+        id_user: restorant.restorer.id_user,
+        type: "order",
+        message: JSON.stringify(notificationMessage),
+        read: false,
+      });
+    
+      // Enregistrez la nouvelle notification
+      const savedNotification = await newNotification.save();
+    
+      res.status(200).json({ result: product, notification: savedNotification, status: "success" });
     res.status(200).json({ result: product, status: "success" });
   } catch (error) {
     res

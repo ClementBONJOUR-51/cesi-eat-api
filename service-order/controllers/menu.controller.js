@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Menu = require("../models/menu.model.js");
+const Notification = require("../models/notification.model.js");
+const Restorant = require("../models/restorant.model.js");
 const { ObjectId } = mongoose.Types;
 
 // Tous les menus avec date_in et date_out + populate sur restorant + produits
@@ -48,7 +50,9 @@ const createMenu = async (req, res) => {
   const starters = req.body.menu_starters.map((starter) => starter.id_product);
   const dishes = req.body.menu_dishes.map((dish) => dish.id_product);
   const desserts = req.body.menu_desserts.map((dessert) => dessert.id_product);
-  const beverages = req.body.menu_beverages.map((beverage) => beverage.id_product);
+  const beverages = req.body.menu_beverages.map(
+    (beverage) => beverage.id_product
+  );
 
   const MenuObj = new Menu({
     restorant: req.body.restorant,
@@ -60,7 +64,29 @@ const createMenu = async (req, res) => {
   });
   try {
     const newMenu = await MenuObj.save();
-    res.status(200).json({ result: newMenu, status: "success" });
+    const notificationMessage = {
+      Titre: "Création d'un menu",
+      message: "Vous avez créé un menu '" + req.body.menu_name + "'",
+    };
+
+    const restorant = await Restorant.findById(MenuObj.restorant);
+    const newNotification = new Notification({
+      id_user: restorant.restorer.id_user,
+      type: "order",
+      message: JSON.stringify(notificationMessage),
+      read: false,
+    });
+
+    // Enregistrez la nouvelle notification
+    const savedNotification = await newNotification.save();
+
+    res
+      .status(200)
+      .json({
+        result: newMenu,
+        notification: savedNotification,
+        status: "success",
+      });
   } catch (error) {
     res.status(500).json({
       message: "Le menu n'a pas pu être créé !",
@@ -74,10 +100,16 @@ const createMenu = async (req, res) => {
 const updateMenu = async (req, res) => {
   try {
     const menu = await Menu.findOne({ _id: req.params.id, date_out: null });
-    const starters = req.body.menu_starters.map((starter) => starter.id_product);
+    const starters = req.body.menu_starters.map(
+      (starter) => starter.id_product
+    );
     const dishes = req.body.menu_dishes.map((dish) => dish.id_product);
-    const desserts = req.body.menu_desserts.map((dessert) => dessert.id_product);
-    const beverages = req.body.menu_beverages.map((beverage) => beverage.id_product);
+    const desserts = req.body.menu_desserts.map(
+      (dessert) => dessert.id_product
+    );
+    const beverages = req.body.menu_beverages.map(
+      (beverage) => beverage.id_product
+    );
     if (menu) {
       menu.restorant = req.body.restorant;
       menu.menu_name = req.body.menu_name;
@@ -86,7 +118,29 @@ const updateMenu = async (req, res) => {
       menu.menu_desserts = desserts;
       menu.menu_beverages = beverages;
       const newMenu = await menu.save();
-      res.status(200).json({ result: newMenu, status: "success" });
+      const notificationMessage = {
+        Titre: "Modification du menu",
+        message: "Vous avez modifié un menu '" + req.body.menu_name + "'",
+      };
+
+      const restorant = await Restorant.findById(newMenu.restorant);
+      const newNotification = new Notification({
+        id_user: restorant.restorer.id_user,
+        type: "order",
+        message: JSON.stringify(notificationMessage),
+        read: false,
+      });
+
+      // Enregistrez la nouvelle notification
+      const savedNotification = await newNotification.save();
+
+      res
+        .status(200)
+        .json({
+          result: newMenu,
+          notification: savedNotification,
+          status: "success",
+        });
     } else {
       res
         .status(404)
@@ -145,11 +199,6 @@ const getAllMenusByRestorant = async (req, res) => {
     });
   }
 };
-
-
-
-
-
 
 module.exports = {
   getAllMenus,
