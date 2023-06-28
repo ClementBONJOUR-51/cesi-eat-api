@@ -578,16 +578,16 @@ const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
 const getOrdersNotPaidByCustomerId = async (req, res) => {
   try {
     const orders = await Order.find({
+      date_out: null,
       "customer.id_customer": req.params.id,
       order_state: "CREATED",
-      date_out: null,
     })
       .populate("products")
       .populate("restorant");
     const count = await Order.countDocuments({
+      date_out: null,
       "customer.id_customer": req.params.id,
       order_state: "CREATED",
-      date_out: null,
     });
     res.status(200).json({ result: { orders, count }, status: "success" });
   } catch (error) {
