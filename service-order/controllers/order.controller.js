@@ -605,10 +605,12 @@ const getOrdersWithoutDeliveryPerson = async (req, res) => {
   try {
     const orders = await Order.find({
       date_out: null,
+      order_state: "PREPARED",
       delivery_person: { $exists: false },
     }).populate("restorant");
     const count = await Order.countDocuments({
       date_out: null,
+      order_state: "PREPARED",
       delivery_person: { $exists: false },
     });
     res.status(200).json({ result: { orders, count }, status: "success" });
