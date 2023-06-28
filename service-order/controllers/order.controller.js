@@ -716,6 +716,141 @@ const getOrdersByDeliveryId = async (req, res) => {
   }
 };
 
+const getStatisticCommercial = async (req, res) => {
+  try {
+    // Inscriptions de restaurant ces 12 derniers mois
+    const registrationsLast12Months = await Restorant.find({
+      date_in: { $gte: moment().subtract(1, 'year').startOf('month').toDate() }
+    }).countDocuments();
+
+    // Nombre de commandes passées par jour (30 derniers jours) et par mois
+    const thirtyDaysAgo = moment().subtract(30, 'days').startOf('day').toDate();
+    const ordersLast30Days = await Order.aggregate([
+      {
+        $match: {
+          date_in: { $gte: thirtyDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%d/%m', date: '$date_in' }
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const oneYearAgo = moment().subtract(1, 'year').startOf('month').toDate();
+    const ordersLastYear = await Order.aggregate([
+      {
+        $match: {
+          date_in: { $gte: oneYearAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%m/%Y', date: '$date_in' }
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Nombre de commandes passées au total 
+    const totalOrders = await Order.find().countDocuments();
+
+    // Nombre de commandes passées par le client en created
+    const createdOrders = await Order.find({
+      order_state: 'CREATED'
+    }).countDocuments();
+
+    // // Nombre de commandes en cours de préparation
+    // const paidOrders = await Order.find({
+    //   order_state: 'PAID'
+    // }).countDocuments();
+
+    // Nombre de commandes en cours de préparation
+    const preparingOrders = await Order.find({
+      order_state: 'PREPARED'
+    }).countDocuments();
+
+    // Nombre de commandes acceptées pour livraison
+    const takenOrders = await Order.find({
+      order_state: 'TAKEN'
+    }).countDocuments();
+
+    // Nombre de commandes en cours de livraison
+    const racingOrders = await Order.find({
+      order_state: 'RACING'
+    }).countDocuments();
+
+    // Nombre de commandes livrées
+    const deliveredOrders = await Order.find({
+      order_state: 'DELIVERED'
+    }).countDocuments();
+
+    // Nombre de commandes en cours (non livrées)
+    const nodeliveredOrders = createdOrders + preparingOrders + takenOrders + racingOrders;
+
+    const sevenDaysAgo = moment().subtract(7, 'days').startOf('day').toDate();
+    const totalAmountEarnedLast7Days = await Order.aggregate([
+      {
+        $match: {
+          date_in: { $gte: sevenDaysAgo },
+          order_state: { $in: ['PAID', 'TAKEN', 'RACING', 'DELIVERED'] } // si order_state est soit PAID, TAKEN, RACING ou DELIVERED
+        }
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'products',
+          foreignField: '_id',
+          as: 'productDetails'
+        }
+      },
+      {
+        $unwind: '$productDetails'
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmountEarned: { $sum: '$productDetails.product_price' }
+        }
+      }
+    ]);
+    
+    const totalAmountEarnedLast7DaysValue = totalAmountEarnedLast7Days.length > 0 ? totalAmountEarnedLast7Days[0].totalAmountEarned : 0;
+     console.log(totalAmountEarnedLast7DaysValue);
+    res.status(200).json({
+      status: 'success',
+      result: {
+        registrationsLast12Months,
+        ordersLast30Days,
+        ordersLastYear,
+        totalOrders,
+        createdOrders,
+        // paidOrders,
+        preparingOrders,
+        takenOrders,
+        racingOrders,
+        deliveredOrders,
+        nodeliveredOrders,
+        totalAmountEarnedLast7Days: totalAmountEarnedLast7DaysValue
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Erreur lors de la récupération des statistiques commerciales.',
+      status: 'error',
+      error: error.message
+    });
+  }
+};
+
+
+
 module.exports = {
   getAllOrders,
   getOneOrder,
@@ -734,4 +869,5 @@ module.exports = {
   getStatisticRestaurant,
   getOrdersByCustomerId,
   getOrdersByDeliveryId,
+  getStatisticCommercial,
 };
