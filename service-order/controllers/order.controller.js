@@ -221,6 +221,33 @@ const updateOrder = async (req, res) => {
     await order.save();
 
     // Envoyer les notifications si l'état de la commande est "PREPARED"
+    if (order.order_state === "PAID") {
+      const customerNotificationMessage = {
+        Titre: "Commande payée",
+        message: "Vous avez payé la commande numéro " + order.invoice_number,
+      };
+      const customerNotification = new Notification({
+        id_user: order.customer.id_customer,
+        type: "order",
+        message: JSON.stringify(customerNotificationMessage),
+        read: false,
+      });
+      await customerNotification.save();
+
+      const restorerNotificationMessage = {
+        Titre: "Nouvelle commande",
+        message: "Vous avez reçu une nouvelle commande : " + order.invoice_number + ".",
+      };
+      const restorerNotification = new Notification({
+        id_user: restorant.restorer.id_user,
+        type: "order",
+        message: JSON.stringify(restorerNotificationMessage),
+        read: false,
+      });
+      await restorerNotification.save();
+    }
+
+    // Envoyer les notifications si l'état de la commande est "PREPARED"
     if (order.order_state === "PREPARED") {
       const customerNotificationMessage = {
         Titre: "Commande en cours de préparation",
@@ -547,6 +574,32 @@ const getOrdersWithProductsAndRestorantsByCustomerId = async (req, res) => {
   }
 };
 
+// Afficher les commandes non payées d'un client
+const getOrdersNotPaidByCustomerId = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      "customer.id_customer": req.params.id,
+      order_state: "CREATED",
+      date_out: null,
+    })
+      .populate("products")
+      .populate("restorant");
+    const count = await Order.countDocuments({
+      "customer.id_customer": req.params.id,
+      order_state: "CREATED",
+      date_out: null,
+    });
+    res.status(200).json({ result: { orders, count }, status: "success" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Les commandes sont introuvables !",
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
+
 // Lister les order n'ayant pas d'id delivery_person en affichant toutes les informations du resto par populate
 const getOrdersWithoutDeliveryPerson = async (req, res) => {
   try {
@@ -870,4 +923,5 @@ module.exports = {
   getOrdersByCustomerId,
   getOrdersByDeliveryId,
   getStatisticCommercial,
+  getOrdersNotPaidByCustomerId,
 };

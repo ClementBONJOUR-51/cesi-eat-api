@@ -1,6 +1,6 @@
 const express = require('express');
 const port = 3000;
-const { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder, getOrdersWithProducts, getOrdersByCustomerId, getOneOrderWithProducts, getOrdersWithRestorants, getOneOrderWithRestorant, assignDeliveryPersonToOrder, getOrdersWithProductsAndRestorantsByCustomerId, getOrdersWithoutDeliveryPerson, getOrdersByRestorantId, getOneOrderByCustomerId, getStatisticRestaurant, getOrdersByDeliveryId, getStatisticCommercial } = require('../controllers/order.controller.js');
+const { getAllOrders, getOneOrder, createOrder, updateOrder, deleteOrder, getOrdersWithProducts, getOrdersByCustomerId, getOneOrderWithProducts, getOrdersWithRestorants, getOneOrderWithRestorant, assignDeliveryPersonToOrder, getOrdersWithProductsAndRestorantsByCustomerId, getOrdersWithoutDeliveryPerson, getOrdersByRestorantId, getOneOrderByCustomerId, getStatisticRestaurant, getOrdersByDeliveryId, getStatisticCommercial, getOrdersNotPaidByCustomerId } = require('../controllers/order.controller.js');
 const router = express.Router();
 
 router.get('/getAllOrders', async (req, res) => getAllOrders(req, res));
@@ -21,5 +21,6 @@ router.get('/getStatisticRestaurant/:id', async (req, res) => getStatisticRestau
 router.get('/getOrdersByCustomerId/:id', async (req, res) => getOrdersByCustomerId(req, res));
 router.get('/getOrdersByDeliveryId/:id', async (req, res) => getOrdersByDeliveryId(req, res));
 router.get('/getStatisticCommercial', async (req, res) => getStatisticCommercial(req, res));
+router.get('/getOrdersNotPaidByCustomerId/:id', async (req, res) => getOrdersNotPaidByCustomerId(req, res));
 
 module.exports = router;
