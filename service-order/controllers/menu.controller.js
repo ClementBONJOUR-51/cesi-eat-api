@@ -120,7 +120,7 @@ const updateMenu = async (req, res) => {
       const newMenu = await menu.save();
       const notificationMessage = {
         Titre: "Modification du menu",
-        message: "Vous avez modifié un menu '" + req.body.menu_name + "'",
+        message: "Vous avez modifié un menu " + req.body.menu_name,
       };
 
       const restorant = await Restorant.findById(newMenu.restorant);
