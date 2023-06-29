@@ -471,7 +471,7 @@ const assignDeliveryPersonToOrder = async (req, res) => {
     const order = await Order.findById(req.params.id);
     // console.log(typeof(order.delivery_person));
     if (!order.delivery_person.id_delivery_person) {
-      order.order_state = "TAKEN";
+      order.order_state = "RACING";
       
     // console.log('ajout', order.delivery_person.id_delivery_person);
       order.delivery_person = {
