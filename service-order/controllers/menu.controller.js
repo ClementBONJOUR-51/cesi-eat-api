@@ -66,7 +66,7 @@ const createMenu = async (req, res) => {
     const newMenu = await MenuObj.save();
     const notificationMessage = {
       Titre: "Création d'un menu",
-      message: "Vous avez créé un menu '" + req.body.menu_name + "'",
+      message: "Vous avez créé un menu " + req.body.menu_name,
     };
 
     const restorant = await Restorant.findById(MenuObj.restorant);
